@@ -1,0 +1,2098 @@
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 1
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"nrf24l01.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.NRF_Set_GPIO,"ax",%progbits
+  16              		.align	1
+  17              		.arch armv7-m
+  18              		.syntax unified
+  19              		.thumb
+  20              		.thumb_func
+  21              		.fpu softvfp
+  23              	NRF_Set_GPIO:
+  24              	.LVL0:
+  25              	.LFB65:
+  26              		.file 1 "driverslib/nrf24l01.c"
+   1:driverslib/nrf24l01.c **** #include "nrf24l01.h"
+   2:driverslib/nrf24l01.c **** #include "stdlib.h"
+   3:driverslib/nrf24l01.c **** #include "string.h"
+   4:driverslib/nrf24l01.c **** 
+   5:driverslib/nrf24l01.c **** 
+   6:driverslib/nrf24l01.c **** 
+   7:driverslib/nrf24l01.c **** 
+   8:driverslib/nrf24l01.c **** extern SPI_HandleTypeDef hspi3;
+   9:driverslib/nrf24l01.c **** 
+  10:driverslib/nrf24l01.c **** SPI_HandleTypeDef * SPI_USE;
+  11:driverslib/nrf24l01.c **** 
+  12:driverslib/nrf24l01.c **** 
+  13:driverslib/nrf24l01.c **** #define NRF_SPI_Write_Read(write_ptr,read_ptr,len)   HAL_SPI_TransmitReceive(SPI_USE,write_ptr,read
+  14:driverslib/nrf24l01.c **** #define NRF_SPI_Read(read_ptr,len) HAL_SPI_Receive(SPI_USE,read_ptr,len,50)
+  15:driverslib/nrf24l01.c **** #define NRF_SPI_Write(write_ptr,len) HAL_SPI_Transmit(SPI_USE,write_ptr,len,50)
+  16:driverslib/nrf24l01.c **** 
+  17:driverslib/nrf24l01.c **** #define CRC_ENABLE   1
+  18:driverslib/nrf24l01.c **** 
+  19:driverslib/nrf24l01.c **** 
+  20:driverslib/nrf24l01.c **** 
+  21:driverslib/nrf24l01.c **** uint8_t  RX_ADDRESS[3][5]= {{0x20,0x30,0x40,0x40,0x42},
+  22:driverslib/nrf24l01.c ****                             {0x1,0x2,0x3,0x4,0x5},
+  23:driverslib/nrf24l01.c ****                             }; 
+  24:driverslib/nrf24l01.c **** uint8_t  TX_ADDRESS[5]= {0x20,0x30,0x40,0x40,0x42}; 
+  25:driverslib/nrf24l01.c **** 
+  26:driverslib/nrf24l01.c **** 
+  27:driverslib/nrf24l01.c **** 
+  28:driverslib/nrf24l01.c **** uint8_t  NRF_TX_Data[TX_PLOAD_WIDTH]={1,2,3,4,5,6,7,8,9,10};
+  29:driverslib/nrf24l01.c **** uint8_t  NRF_RX_Data[RX_PLOAD_WIDTH]={0};
+  30:driverslib/nrf24l01.c **** 
+  31:driverslib/nrf24l01.c **** 
+  32:driverslib/nrf24l01.c **** uint8_t STATUS_VALUE;
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 2
+
+
+  33:driverslib/nrf24l01.c **** 
+  34:driverslib/nrf24l01.c **** uint8_t CONFIG_VALUE=0x00;  // Enable all Interupts
+  35:driverslib/nrf24l01.c **** 
+  36:driverslib/nrf24l01.c **** GPIO_TypeDef *  CSN_GPIO_PORT;
+  37:driverslib/nrf24l01.c **** GPIO_TypeDef * CE_GPIO_PORT;
+  38:driverslib/nrf24l01.c **** uint32_t CSN_GPIO_PIN;
+  39:driverslib/nrf24l01.c **** uint32_t CE_GPIO_PIN;
+  40:driverslib/nrf24l01.c **** 
+  41:driverslib/nrf24l01.c **** static void NRF_Set_GPIO(NRF_GPIO io,NRF_GPIO_Level level){
+  27              		.loc 1 41 59 view -0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31              		.loc 1 41 59 is_stmt 0 view .LVU1
+  32 0000 08B5     		push	{r3, lr}
+  33              	.LCFI0:
+  34              		.cfi_def_cfa_offset 8
+  35              		.cfi_offset 3, -8
+  36              		.cfi_offset 14, -4
+  42:driverslib/nrf24l01.c ****   if(io==CSN){
+  37              		.loc 1 42 3 is_stmt 1 view .LVU2
+  38              		.loc 1 42 5 is_stmt 0 view .LVU3
+  39 0002 10B1     		cbz	r0, .L5
+  43:driverslib/nrf24l01.c ****     HAL_GPIO_WritePin(CSN_GPIO_PORT,CSN_GPIO_PIN,level);
+  44:driverslib/nrf24l01.c ****   }else if(io==CE){
+  40              		.loc 1 44 9 is_stmt 1 view .LVU4
+  41              		.loc 1 44 11 is_stmt 0 view .LVU5
+  42 0004 0128     		cmp	r0, #1
+  43 0006 08D0     		beq	.L6
+  44              	.LVL1:
+  45              	.L1:
+  45:driverslib/nrf24l01.c ****     HAL_GPIO_WritePin(CE_GPIO_PORT,CE_GPIO_PIN,level);
+  46:driverslib/nrf24l01.c ****   } 
+  47:driverslib/nrf24l01.c **** }
+  46              		.loc 1 47 1 view .LVU6
+  47 0008 08BD     		pop	{r3, pc}
+  48              	.LVL2:
+  49              	.L5:
+  43:driverslib/nrf24l01.c ****     HAL_GPIO_WritePin(CSN_GPIO_PORT,CSN_GPIO_PIN,level);
+  50              		.loc 1 43 5 is_stmt 1 view .LVU7
+  51 000a 0A46     		mov	r2, r1
+  52 000c 074B     		ldr	r3, .L7
+  53 000e 1988     		ldrh	r1, [r3]
+  54              	.LVL3:
+  43:driverslib/nrf24l01.c ****     HAL_GPIO_WritePin(CSN_GPIO_PORT,CSN_GPIO_PIN,level);
+  55              		.loc 1 43 5 is_stmt 0 view .LVU8
+  56 0010 074B     		ldr	r3, .L7+4
+  57 0012 1868     		ldr	r0, [r3]
+  58              	.LVL4:
+  43:driverslib/nrf24l01.c ****     HAL_GPIO_WritePin(CSN_GPIO_PORT,CSN_GPIO_PIN,level);
+  59              		.loc 1 43 5 view .LVU9
+  60 0014 FFF7FEFF 		bl	HAL_GPIO_WritePin
+  61              	.LVL5:
+  62 0018 F6E7     		b	.L1
+  63              	.LVL6:
+  64              	.L6:
+  45:driverslib/nrf24l01.c ****     HAL_GPIO_WritePin(CE_GPIO_PORT,CE_GPIO_PIN,level);
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 3
+
+
+  65              		.loc 1 45 5 is_stmt 1 view .LVU10
+  66 001a 0A46     		mov	r2, r1
+  67 001c 054B     		ldr	r3, .L7+8
+  68 001e 1988     		ldrh	r1, [r3]
+  69              	.LVL7:
+  45:driverslib/nrf24l01.c ****     HAL_GPIO_WritePin(CE_GPIO_PORT,CE_GPIO_PIN,level);
+  70              		.loc 1 45 5 is_stmt 0 view .LVU11
+  71 0020 054B     		ldr	r3, .L7+12
+  72 0022 1868     		ldr	r0, [r3]
+  73              	.LVL8:
+  45:driverslib/nrf24l01.c ****     HAL_GPIO_WritePin(CE_GPIO_PORT,CE_GPIO_PIN,level);
+  74              		.loc 1 45 5 view .LVU12
+  75 0024 FFF7FEFF 		bl	HAL_GPIO_WritePin
+  76              	.LVL9:
+  77              		.loc 1 47 1 view .LVU13
+  78 0028 EEE7     		b	.L1
+  79              	.L8:
+  80 002a 00BF     		.align	2
+  81              	.L7:
+  82 002c 00000000 		.word	CSN_GPIO_PIN
+  83 0030 00000000 		.word	CSN_GPIO_PORT
+  84 0034 00000000 		.word	CE_GPIO_PIN
+  85 0038 00000000 		.word	CE_GPIO_PORT
+  86              		.cfi_endproc
+  87              	.LFE65:
+  89              		.section	.text.NRF_Read_Reg,"ax",%progbits
+  90              		.align	1
+  91              		.global	NRF_Read_Reg
+  92              		.syntax unified
+  93              		.thumb
+  94              		.thumb_func
+  95              		.fpu softvfp
+  97              	NRF_Read_Reg:
+  98              	.LVL10:
+  99              	.LFB66:
+  48:driverslib/nrf24l01.c **** 
+  49:driverslib/nrf24l01.c **** uint8_t NRF_Read_Reg(uint8_t reg){
+ 100              		.loc 1 49 34 is_stmt 1 view -0
+ 101              		.cfi_startproc
+ 102              		@ args = 0, pretend = 0, frame = 16
+ 103              		@ frame_needed = 0, uses_anonymous_args = 0
+ 104              		.loc 1 49 34 is_stmt 0 view .LVU15
+ 105 0000 70B5     		push	{r4, r5, r6, lr}
+ 106              	.LCFI1:
+ 107              		.cfi_def_cfa_offset 16
+ 108              		.cfi_offset 4, -16
+ 109              		.cfi_offset 5, -12
+ 110              		.cfi_offset 6, -8
+ 111              		.cfi_offset 14, -4
+ 112 0002 86B0     		sub	sp, sp, #24
+ 113              	.LCFI2:
+ 114              		.cfi_def_cfa_offset 40
+ 115 0004 8DF80F00 		strb	r0, [sp, #15]
+  50:driverslib/nrf24l01.c ****   uint8_t rxData=0;
+ 116              		.loc 1 50 3 is_stmt 1 view .LVU16
+ 117              		.loc 1 50 11 is_stmt 0 view .LVU17
+ 118 0008 0024     		movs	r4, #0
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 4
+
+
+ 119 000a 8DF81740 		strb	r4, [sp, #23]
+  51:driverslib/nrf24l01.c ****   uint8_t nop=0xFF;
+ 120              		.loc 1 51 3 is_stmt 1 view .LVU18
+ 121              		.loc 1 51 11 is_stmt 0 view .LVU19
+ 122 000e FF23     		movs	r3, #255
+ 123 0010 8DF81630 		strb	r3, [sp, #22]
+  52:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CSN,LOW);
+ 124              		.loc 1 52 3 is_stmt 1 view .LVU20
+ 125 0014 2146     		mov	r1, r4
+ 126 0016 2046     		mov	r0, r4
+ 127              	.LVL11:
+ 128              		.loc 1 52 3 is_stmt 0 view .LVU21
+ 129 0018 FFF7FEFF 		bl	NRF_Set_GPIO
+ 130              	.LVL12:
+  53:driverslib/nrf24l01.c ****   NRF_SPI_Write_Read(&reg,&STATUS_VALUE,1);
+ 131              		.loc 1 53 3 is_stmt 1 view .LVU22
+ 132 001c 0D4D     		ldr	r5, .L11
+ 133 001e 3226     		movs	r6, #50
+ 134 0020 0096     		str	r6, [sp]
+ 135 0022 0123     		movs	r3, #1
+ 136 0024 0C4A     		ldr	r2, .L11+4
+ 137 0026 0DF10F01 		add	r1, sp, #15
+ 138 002a 2868     		ldr	r0, [r5]
+ 139 002c FFF7FEFF 		bl	HAL_SPI_TransmitReceive
+ 140              	.LVL13:
+  54:driverslib/nrf24l01.c ****   NRF_SPI_Write_Read(&nop,&rxData,1);
+ 141              		.loc 1 54 3 view .LVU23
+ 142 0030 0096     		str	r6, [sp]
+ 143 0032 0123     		movs	r3, #1
+ 144 0034 0DF11702 		add	r2, sp, #23
+ 145 0038 0DF11601 		add	r1, sp, #22
+ 146 003c 2868     		ldr	r0, [r5]
+ 147 003e FFF7FEFF 		bl	HAL_SPI_TransmitReceive
+ 148              	.LVL14:
+  55:driverslib/nrf24l01.c **** 
+  56:driverslib/nrf24l01.c ****  // NRF_SPI_Read(&rxData,1);
+  57:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CSN,HIGH);
+ 149              		.loc 1 57 3 view .LVU24
+ 150 0042 0121     		movs	r1, #1
+ 151 0044 2046     		mov	r0, r4
+ 152 0046 FFF7FEFF 		bl	NRF_Set_GPIO
+ 153              	.LVL15:
+  58:driverslib/nrf24l01.c ****   return rxData;  
+ 154              		.loc 1 58 3 view .LVU25
+  59:driverslib/nrf24l01.c **** }
+ 155              		.loc 1 59 1 is_stmt 0 view .LVU26
+ 156 004a 9DF81700 		ldrb	r0, [sp, #23]	@ zero_extendqisi2
+ 157 004e 06B0     		add	sp, sp, #24
+ 158              	.LCFI3:
+ 159              		.cfi_def_cfa_offset 16
+ 160              		@ sp needed
+ 161 0050 70BD     		pop	{r4, r5, r6, pc}
+ 162              	.L12:
+ 163 0052 00BF     		.align	2
+ 164              	.L11:
+ 165 0054 00000000 		.word	SPI_USE
+ 166 0058 00000000 		.word	STATUS_VALUE
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 5
+
+
+ 167              		.cfi_endproc
+ 168              	.LFE66:
+ 170              		.section	.text.NRF_Write_Reg,"ax",%progbits
+ 171              		.align	1
+ 172              		.global	NRF_Write_Reg
+ 173              		.syntax unified
+ 174              		.thumb
+ 175              		.thumb_func
+ 176              		.fpu softvfp
+ 178              	NRF_Write_Reg:
+ 179              	.LVL16:
+ 180              	.LFB67:
+  60:driverslib/nrf24l01.c **** 
+  61:driverslib/nrf24l01.c **** uint8_t NRF_Write_Reg(uint8_t reg,uint8_t data){
+ 181              		.loc 1 61 48 is_stmt 1 view -0
+ 182              		.cfi_startproc
+ 183              		@ args = 0, pretend = 0, frame = 16
+ 184              		@ frame_needed = 0, uses_anonymous_args = 0
+ 185              		.loc 1 61 48 is_stmt 0 view .LVU28
+ 186 0000 30B5     		push	{r4, r5, lr}
+ 187              	.LCFI4:
+ 188              		.cfi_def_cfa_offset 12
+ 189              		.cfi_offset 4, -12
+ 190              		.cfi_offset 5, -8
+ 191              		.cfi_offset 14, -4
+ 192 0002 87B0     		sub	sp, sp, #28
+ 193              	.LCFI5:
+ 194              		.cfi_def_cfa_offset 40
+ 195 0004 8DF80F10 		strb	r1, [sp, #15]
+  62:driverslib/nrf24l01.c ****   uint8_t spi_send_data=W_REGISTER|reg;     
+ 196              		.loc 1 62 3 is_stmt 1 view .LVU29
+ 197              		.loc 1 62 11 is_stmt 0 view .LVU30
+ 198 0008 40F02000 		orr	r0, r0, #32
+ 199              	.LVL17:
+ 200              		.loc 1 62 11 view .LVU31
+ 201 000c 8DF81700 		strb	r0, [sp, #23]
+  63:driverslib/nrf24l01.c ****   // 对命令来说，除了读命令，其他的命令的0x20处都是1，所以无所谓
+  64:driverslib/nrf24l01.c ****   // 可以用此函数来发送清除 或者别的命令
+  65:driverslib/nrf24l01.c ****   
+  66:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CSN,LOW);
+ 202              		.loc 1 66 3 is_stmt 1 view .LVU32
+ 203 0010 0021     		movs	r1, #0
+ 204              	.LVL18:
+ 205              		.loc 1 66 3 is_stmt 0 view .LVU33
+ 206 0012 0846     		mov	r0, r1
+ 207 0014 FFF7FEFF 		bl	NRF_Set_GPIO
+ 208              	.LVL19:
+  67:driverslib/nrf24l01.c ****   NRF_SPI_Write_Read(&spi_send_data,&STATUS_VALUE,1);
+ 209              		.loc 1 67 3 is_stmt 1 view .LVU34
+ 210 0018 0B4C     		ldr	r4, .L15
+ 211 001a 3225     		movs	r5, #50
+ 212 001c 0095     		str	r5, [sp]
+ 213 001e 0123     		movs	r3, #1
+ 214 0020 0A4A     		ldr	r2, .L15+4
+ 215 0022 0DF11701 		add	r1, sp, #23
+ 216 0026 2068     		ldr	r0, [r4]
+ 217 0028 FFF7FEFF 		bl	HAL_SPI_TransmitReceive
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 6
+
+
+ 218              	.LVL20:
+  68:driverslib/nrf24l01.c ****   NRF_SPI_Write(&data,1);
+ 219              		.loc 1 68 3 view .LVU35
+ 220 002c 2B46     		mov	r3, r5
+ 221 002e 0122     		movs	r2, #1
+ 222 0030 0DF10F01 		add	r1, sp, #15
+ 223 0034 2068     		ldr	r0, [r4]
+ 224 0036 FFF7FEFF 		bl	HAL_SPI_Transmit
+ 225              	.LVL21:
+  69:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CSN,HIGH);
+ 226              		.loc 1 69 3 view .LVU36
+ 227 003a 0121     		movs	r1, #1
+ 228 003c 0020     		movs	r0, #0
+ 229 003e FFF7FEFF 		bl	NRF_Set_GPIO
+ 230              	.LVL22:
+  70:driverslib/nrf24l01.c **** 
+  71:driverslib/nrf24l01.c ****   return 1;
+ 231              		.loc 1 71 3 view .LVU37
+  72:driverslib/nrf24l01.c **** }
+ 232              		.loc 1 72 1 is_stmt 0 view .LVU38
+ 233 0042 0120     		movs	r0, #1
+ 234 0044 07B0     		add	sp, sp, #28
+ 235              	.LCFI6:
+ 236              		.cfi_def_cfa_offset 12
+ 237              		@ sp needed
+ 238 0046 30BD     		pop	{r4, r5, pc}
+ 239              	.L16:
+ 240              		.align	2
+ 241              	.L15:
+ 242 0048 00000000 		.word	SPI_USE
+ 243 004c 00000000 		.word	STATUS_VALUE
+ 244              		.cfi_endproc
+ 245              	.LFE67:
+ 247              		.section	.text.NRF_Set_Mode,"ax",%progbits
+ 248              		.align	1
+ 249              		.syntax unified
+ 250              		.thumb
+ 251              		.thumb_func
+ 252              		.fpu softvfp
+ 254              	NRF_Set_Mode:
+ 255              	.LVL23:
+ 256              	.LFB73:
+  73:driverslib/nrf24l01.c **** 
+  74:driverslib/nrf24l01.c **** void NRF_Read_Bytes(uint8_t addr,uint8_t *rx_data,uint8_t len){
+  75:driverslib/nrf24l01.c ****   uint8_t * nopdata=(uint8_t *) malloc(sizeof(uint8_t)*len);
+  76:driverslib/nrf24l01.c ****   memset(nopdata,0xFF,len);
+  77:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CSN,LOW);
+  78:driverslib/nrf24l01.c ****   NRF_SPI_Write_Read(&addr,&STATUS_VALUE,1);
+  79:driverslib/nrf24l01.c ****   NRF_SPI_Write_Read(nopdata,rx_data,len);
+  80:driverslib/nrf24l01.c ****   //NRF_SPI_Read(rx_data,len);
+  81:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CSN,HIGH);
+  82:driverslib/nrf24l01.c ****   free(nopdata);
+  83:driverslib/nrf24l01.c ****   
+  84:driverslib/nrf24l01.c **** }
+  85:driverslib/nrf24l01.c **** 
+  86:driverslib/nrf24l01.c **** uint8_t NRF_Write_Bytes(uint8_t addr,uint8_t *data,uint8_t len){
+  87:driverslib/nrf24l01.c ****   uint8_t * temp=(uint8_t *)malloc(sizeof(uint8_t)*len);
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 7
+
+
+  88:driverslib/nrf24l01.c ****   uint8_t spi_send_data=W_REGISTER|addr;
+  89:driverslib/nrf24l01.c ****   
+  90:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CSN,LOW);
+  91:driverslib/nrf24l01.c ****   NRF_SPI_Write_Read(&spi_send_data,&STATUS_VALUE,1);
+  92:driverslib/nrf24l01.c ****   NRF_SPI_Write_Read(data,temp,len);
+  93:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CSN,HIGH);
+  94:driverslib/nrf24l01.c ****   
+  95:driverslib/nrf24l01.c ****   NRF_Read_Bytes(addr,temp,len);  
+  96:driverslib/nrf24l01.c ****   free(temp);
+  97:driverslib/nrf24l01.c ****   return 1;
+  98:driverslib/nrf24l01.c **** }
+  99:driverslib/nrf24l01.c **** 
+ 100:driverslib/nrf24l01.c **** 
+ 101:driverslib/nrf24l01.c **** 
+ 102:driverslib/nrf24l01.c **** uint8_t NRF_Init(SPI_HandleTypeDef * spi_port, uint8_t rx_channel_num,\
+ 103:driverslib/nrf24l01.c ****                   GPIO_TypeDef * csn_gpio_port,uint32_t csn_gpio_pin,\
+ 104:driverslib/nrf24l01.c ****                   GPIO_TypeDef * ce_gpio_port,uint32_t ce_gpio_pin){
+ 105:driverslib/nrf24l01.c ****   
+ 106:driverslib/nrf24l01.c ****   uint8_t result=1;
+ 107:driverslib/nrf24l01.c ****   uint8_t retry_time=0;
+ 108:driverslib/nrf24l01.c **** 
+ 109:driverslib/nrf24l01.c ****   SPI_USE=spi_port;
+ 110:driverslib/nrf24l01.c ****   CSN_GPIO_PORT=csn_gpio_port;
+ 111:driverslib/nrf24l01.c ****   CE_GPIO_PORT=ce_gpio_port;
+ 112:driverslib/nrf24l01.c ****   CSN_GPIO_PIN=csn_gpio_pin;
+ 113:driverslib/nrf24l01.c ****   CE_GPIO_PIN=ce_gpio_pin;
+ 114:driverslib/nrf24l01.c **** 
+ 115:driverslib/nrf24l01.c **** REDO:
+ 116:driverslib/nrf24l01.c ****   retry_time++;
+ 117:driverslib/nrf24l01.c ****   if(retry_time>5){
+ 118:driverslib/nrf24l01.c ****     return 0;
+ 119:driverslib/nrf24l01.c ****   }
+ 120:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(NRF_CONFIG,CONFIG_VALUE|NRF_TX);   // Power Up
+ 121:driverslib/nrf24l01.c **** 
+ 122:driverslib/nrf24l01.c ****   HAL_Delay(10);
+ 123:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(EN_AA,0X01); //自动ACK
+ 124:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(SETUP_RETR,0x0F); //自动重发
+ 125:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(RF_CH,0); //2.4ghz
+ 126:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(RX_PW_P0,RX_PLOAD_WIDTH); 
+ 127:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(RF_SETUP,0x0E); //2mhz 0db
+ 128:driverslib/nrf24l01.c ****   
+ 129:driverslib/nrf24l01.c ****   if(rx_channel_num>5){
+ 130:driverslib/nrf24l01.c ****     return 0;
+ 131:driverslib/nrf24l01.c **** 
+ 132:driverslib/nrf24l01.c ****   }
+ 133:driverslib/nrf24l01.c ****   uint8_t temp=0;
+ 134:driverslib/nrf24l01.c ****   temp=(1<<rx_channel_num)-1;
+ 135:driverslib/nrf24l01.c ****   
+ 136:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(EN_RXADDR,temp);//允许通道n 接收
+ 137:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(NRF_CONFIG,CONFIG_VALUE|NRF_RX);     // 设置为接收模式
+ 138:driverslib/nrf24l01.c ****   
+ 139:driverslib/nrf24l01.c ****   result&=NRF_Set_Tx_Addr(TX_ADDRESS,sizeof(TX_ADDRESS));
+ 140:driverslib/nrf24l01.c ****   
+ 141:driverslib/nrf24l01.c ****   NRF_Set_Rx_Addr(RX_ADDRESS,sizeof(RX_ADDRESS));
+ 142:driverslib/nrf24l01.c ****   
+ 143:driverslib/nrf24l01.c ****   if(!result){
+ 144:driverslib/nrf24l01.c ****     result=1;
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 8
+
+
+ 145:driverslib/nrf24l01.c ****     goto REDO;
+ 146:driverslib/nrf24l01.c ****   }
+ 147:driverslib/nrf24l01.c ****   
+ 148:driverslib/nrf24l01.c ****   return result;
+ 149:driverslib/nrf24l01.c **** }
+ 150:driverslib/nrf24l01.c **** 
+ 151:driverslib/nrf24l01.c **** uint8_t NRF_Set_Tx_Addr(uint8_t * addr,size_t size_check){  
+ 152:driverslib/nrf24l01.c ****   // the lengh of the array must be 5
+ 153:driverslib/nrf24l01.c ****   // after set_tx_addr, must init the nrf  again!
+ 154:driverslib/nrf24l01.c ****   uint8_t result=0;
+ 155:driverslib/nrf24l01.c ****   if(size_check!=sizeof(TX_ADDRESS)){
+ 156:driverslib/nrf24l01.c ****     return 0;
+ 157:driverslib/nrf24l01.c ****   }
+ 158:driverslib/nrf24l01.c ****   result=NRF_Write_Bytes(TX_ADDR,addr,size_check);
+ 159:driverslib/nrf24l01.c ****   return result;
+ 160:driverslib/nrf24l01.c **** }
+ 161:driverslib/nrf24l01.c **** 
+ 162:driverslib/nrf24l01.c **** uint8_t NRF_Set_Rx_Addr(uint8_t rx_addrs[][5],size_t size_check){
+ 163:driverslib/nrf24l01.c ****    // the lengh of the array must be 5
+ 164:driverslib/nrf24l01.c ****   // after set_rx_addr, must init the nrf  again!
+ 165:driverslib/nrf24l01.c ****   
+ 166:driverslib/nrf24l01.c ****   /*
+ 167:driverslib/nrf24l01.c ****   the rx_addrs must be
+ 168:driverslib/nrf24l01.c ****   {addr0_byte1,addr0_byte2,addr0_byte3,addr0_bye4,addr0_byte5},
+ 169:driverslib/nrf24l01.c ****   {addr1_byte1,addr1_byte2,addr1_byte3,addr1_bye4,addr1_byte5},
+ 170:driverslib/nrf24l01.c ****   {addr2_byte5,addr3_byte5,addr4_byte5,addr5_byte5,0}
+ 171:driverslib/nrf24l01.c ****   */
+ 172:driverslib/nrf24l01.c ****   
+ 173:driverslib/nrf24l01.c ****   uint8_t result=1;
+ 174:driverslib/nrf24l01.c ****   if(size_check!=sizeof(RX_ADDRESS)){
+ 175:driverslib/nrf24l01.c ****     return 0;
+ 176:driverslib/nrf24l01.c ****   }
+ 177:driverslib/nrf24l01.c ****   
+ 178:driverslib/nrf24l01.c ****   for(int i=0;i<2;++i){
+ 179:driverslib/nrf24l01.c ****     result&=NRF_Write_Bytes(RX_ADDR_P0 + i,rx_addrs[i],sizeof(RX_ADDRESS[0]));
+ 180:driverslib/nrf24l01.c ****   }
+ 181:driverslib/nrf24l01.c ****   for(int i=0;i<4;++i){
+ 182:driverslib/nrf24l01.c ****     result&=NRF_Write_Reg(RX_ADDR_P0+2+i,rx_addrs[2][i]);
+ 183:driverslib/nrf24l01.c ****   }
+ 184:driverslib/nrf24l01.c ****   return result;
+ 185:driverslib/nrf24l01.c **** }
+ 186:driverslib/nrf24l01.c **** 
+ 187:driverslib/nrf24l01.c **** static void NRF_Set_Mode(NRF_Mode mode,uint8_t EN_CRC){
+ 257              		.loc 1 187 55 is_stmt 1 view -0
+ 258              		.cfi_startproc
+ 259              		@ args = 0, pretend = 0, frame = 0
+ 260              		@ frame_needed = 0, uses_anonymous_args = 0
+ 261              		.loc 1 187 55 is_stmt 0 view .LVU40
+ 262 0000 08B5     		push	{r3, lr}
+ 263              	.LCFI7:
+ 264              		.cfi_def_cfa_offset 8
+ 265              		.cfi_offset 3, -8
+ 266              		.cfi_offset 14, -4
+ 188:driverslib/nrf24l01.c ****   if(EN_CRC){
+ 267              		.loc 1 188 3 is_stmt 1 view .LVU41
+ 268              		.loc 1 188 5 is_stmt 0 view .LVU42
+ 269 0002 09B1     		cbz	r1, .L18
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 9
+
+
+ 189:driverslib/nrf24l01.c ****     mode|=0x08;
+ 270              		.loc 1 189 5 is_stmt 1 view .LVU43
+ 271              		.loc 1 189 9 is_stmt 0 view .LVU44
+ 272 0004 40F00800 		orr	r0, r0, #8
+ 273              	.LVL24:
+ 274              	.L18:
+ 190:driverslib/nrf24l01.c ****   }
+ 191:driverslib/nrf24l01.c ****   CONFIG_VALUE|=mode;
+ 275              		.loc 1 191 3 is_stmt 1 view .LVU45
+ 276              		.loc 1 191 15 is_stmt 0 view .LVU46
+ 277 0008 034B     		ldr	r3, .L20
+ 278 000a 1978     		ldrb	r1, [r3]	@ zero_extendqisi2
+ 279              	.LVL25:
+ 280              		.loc 1 191 15 view .LVU47
+ 281 000c 0143     		orrs	r1, r1, r0
+ 282 000e 1970     		strb	r1, [r3]
+ 192:driverslib/nrf24l01.c ****   NRF_Write_Reg(NRF_CONFIG,CONFIG_VALUE);
+ 283              		.loc 1 192 3 is_stmt 1 view .LVU48
+ 284 0010 0020     		movs	r0, #0
+ 285              	.LVL26:
+ 286              		.loc 1 192 3 is_stmt 0 view .LVU49
+ 287 0012 FFF7FEFF 		bl	NRF_Write_Reg
+ 288              	.LVL27:
+ 193:driverslib/nrf24l01.c **** }
+ 289              		.loc 1 193 1 view .LVU50
+ 290 0016 08BD     		pop	{r3, pc}
+ 291              	.L21:
+ 292              		.align	2
+ 293              	.L20:
+ 294 0018 00000000 		.word	.LANCHOR0
+ 295              		.cfi_endproc
+ 296              	.LFE73:
+ 298              		.section	.text.NRF_Read_Bytes,"ax",%progbits
+ 299              		.align	1
+ 300              		.global	NRF_Read_Bytes
+ 301              		.syntax unified
+ 302              		.thumb
+ 303              		.thumb_func
+ 304              		.fpu softvfp
+ 306              	NRF_Read_Bytes:
+ 307              	.LVL28:
+ 308              	.LFB68:
+  74:driverslib/nrf24l01.c ****   uint8_t * nopdata=(uint8_t *) malloc(sizeof(uint8_t)*len);
+ 309              		.loc 1 74 63 is_stmt 1 view -0
+ 310              		.cfi_startproc
+ 311              		@ args = 0, pretend = 0, frame = 8
+ 312              		@ frame_needed = 0, uses_anonymous_args = 0
+  74:driverslib/nrf24l01.c ****   uint8_t * nopdata=(uint8_t *) malloc(sizeof(uint8_t)*len);
+ 313              		.loc 1 74 63 is_stmt 0 view .LVU52
+ 314 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 315              	.LCFI8:
+ 316              		.cfi_def_cfa_offset 24
+ 317              		.cfi_offset 4, -24
+ 318              		.cfi_offset 5, -20
+ 319              		.cfi_offset 6, -16
+ 320              		.cfi_offset 7, -12
+ 321              		.cfi_offset 8, -8
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 10
+
+
+ 322              		.cfi_offset 14, -4
+ 323 0004 84B0     		sub	sp, sp, #16
+ 324              	.LCFI9:
+ 325              		.cfi_def_cfa_offset 40
+ 326 0006 0E46     		mov	r6, r1
+ 327 0008 1446     		mov	r4, r2
+ 328 000a 8DF80F00 		strb	r0, [sp, #15]
+  75:driverslib/nrf24l01.c ****   memset(nopdata,0xFF,len);
+ 329              		.loc 1 75 3 is_stmt 1 view .LVU53
+  75:driverslib/nrf24l01.c ****   memset(nopdata,0xFF,len);
+ 330              		.loc 1 75 33 is_stmt 0 view .LVU54
+ 331 000e 1046     		mov	r0, r2
+ 332              	.LVL29:
+  75:driverslib/nrf24l01.c ****   memset(nopdata,0xFF,len);
+ 333              		.loc 1 75 33 view .LVU55
+ 334 0010 FFF7FEFF 		bl	malloc
+ 335              	.LVL30:
+  75:driverslib/nrf24l01.c ****   memset(nopdata,0xFF,len);
+ 336              		.loc 1 75 33 view .LVU56
+ 337 0014 0546     		mov	r5, r0
+ 338              	.LVL31:
+  76:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CSN,LOW);
+ 339              		.loc 1 76 3 is_stmt 1 view .LVU57
+ 340 0016 2246     		mov	r2, r4
+ 341 0018 FF21     		movs	r1, #255
+ 342 001a FFF7FEFF 		bl	memset
+ 343              	.LVL32:
+  77:driverslib/nrf24l01.c ****   NRF_SPI_Write_Read(&addr,&STATUS_VALUE,1);
+ 344              		.loc 1 77 3 view .LVU58
+ 345 001e 0021     		movs	r1, #0
+ 346 0020 0846     		mov	r0, r1
+ 347 0022 FFF7FEFF 		bl	NRF_Set_GPIO
+ 348              	.LVL33:
+  78:driverslib/nrf24l01.c ****   NRF_SPI_Write_Read(nopdata,rx_data,len);
+ 349              		.loc 1 78 3 view .LVU59
+ 350 0026 0F4F     		ldr	r7, .L24
+ 351 0028 4FF03208 		mov	r8, #50
+ 352 002c CDF80080 		str	r8, [sp]
+ 353 0030 0123     		movs	r3, #1
+ 354 0032 0D4A     		ldr	r2, .L24+4
+ 355 0034 0DF10F01 		add	r1, sp, #15
+ 356 0038 3868     		ldr	r0, [r7]
+ 357 003a FFF7FEFF 		bl	HAL_SPI_TransmitReceive
+ 358              	.LVL34:
+  79:driverslib/nrf24l01.c ****   //NRF_SPI_Read(rx_data,len);
+ 359              		.loc 1 79 3 view .LVU60
+ 360 003e CDF80080 		str	r8, [sp]
+ 361 0042 2346     		mov	r3, r4
+ 362 0044 3246     		mov	r2, r6
+ 363 0046 2946     		mov	r1, r5
+ 364 0048 3868     		ldr	r0, [r7]
+ 365 004a FFF7FEFF 		bl	HAL_SPI_TransmitReceive
+ 366              	.LVL35:
+  81:driverslib/nrf24l01.c ****   free(nopdata);
+ 367              		.loc 1 81 3 view .LVU61
+ 368 004e 0121     		movs	r1, #1
+ 369 0050 0020     		movs	r0, #0
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 11
+
+
+ 370 0052 FFF7FEFF 		bl	NRF_Set_GPIO
+ 371              	.LVL36:
+  82:driverslib/nrf24l01.c ****   
+ 372              		.loc 1 82 3 view .LVU62
+ 373 0056 2846     		mov	r0, r5
+ 374 0058 FFF7FEFF 		bl	free
+ 375              	.LVL37:
+  84:driverslib/nrf24l01.c **** 
+ 376              		.loc 1 84 1 is_stmt 0 view .LVU63
+ 377 005c 04B0     		add	sp, sp, #16
+ 378              	.LCFI10:
+ 379              		.cfi_def_cfa_offset 24
+ 380              		@ sp needed
+ 381 005e BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 382              	.LVL38:
+ 383              	.L25:
+  84:driverslib/nrf24l01.c **** 
+ 384              		.loc 1 84 1 view .LVU64
+ 385 0062 00BF     		.align	2
+ 386              	.L24:
+ 387 0064 00000000 		.word	SPI_USE
+ 388 0068 00000000 		.word	STATUS_VALUE
+ 389              		.cfi_endproc
+ 390              	.LFE68:
+ 392              		.section	.text.NRF_Write_Bytes,"ax",%progbits
+ 393              		.align	1
+ 394              		.global	NRF_Write_Bytes
+ 395              		.syntax unified
+ 396              		.thumb
+ 397              		.thumb_func
+ 398              		.fpu softvfp
+ 400              	NRF_Write_Bytes:
+ 401              	.LVL39:
+ 402              	.LFB69:
+  86:driverslib/nrf24l01.c ****   uint8_t * temp=(uint8_t *)malloc(sizeof(uint8_t)*len);
+ 403              		.loc 1 86 64 is_stmt 1 view -0
+ 404              		.cfi_startproc
+ 405              		@ args = 0, pretend = 0, frame = 8
+ 406              		@ frame_needed = 0, uses_anonymous_args = 0
+  86:driverslib/nrf24l01.c ****   uint8_t * temp=(uint8_t *)malloc(sizeof(uint8_t)*len);
+ 407              		.loc 1 86 64 is_stmt 0 view .LVU66
+ 408 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 409              	.LCFI11:
+ 410              		.cfi_def_cfa_offset 28
+ 411              		.cfi_offset 4, -28
+ 412              		.cfi_offset 5, -24
+ 413              		.cfi_offset 6, -20
+ 414              		.cfi_offset 7, -16
+ 415              		.cfi_offset 8, -12
+ 416              		.cfi_offset 9, -8
+ 417              		.cfi_offset 14, -4
+ 418 0004 85B0     		sub	sp, sp, #20
+ 419              	.LCFI12:
+ 420              		.cfi_def_cfa_offset 48
+ 421 0006 0646     		mov	r6, r0
+ 422 0008 0F46     		mov	r7, r1
+ 423 000a 1546     		mov	r5, r2
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 12
+
+
+  87:driverslib/nrf24l01.c ****   uint8_t spi_send_data=W_REGISTER|addr;
+ 424              		.loc 1 87 3 is_stmt 1 view .LVU67
+  87:driverslib/nrf24l01.c ****   uint8_t spi_send_data=W_REGISTER|addr;
+ 425              		.loc 1 87 29 is_stmt 0 view .LVU68
+ 426 000c 1046     		mov	r0, r2
+ 427              	.LVL40:
+  87:driverslib/nrf24l01.c ****   uint8_t spi_send_data=W_REGISTER|addr;
+ 428              		.loc 1 87 29 view .LVU69
+ 429 000e FFF7FEFF 		bl	malloc
+ 430              	.LVL41:
+  87:driverslib/nrf24l01.c ****   uint8_t spi_send_data=W_REGISTER|addr;
+ 431              		.loc 1 87 29 view .LVU70
+ 432 0012 0446     		mov	r4, r0
+ 433              	.LVL42:
+  88:driverslib/nrf24l01.c ****   
+ 434              		.loc 1 88 3 is_stmt 1 view .LVU71
+  88:driverslib/nrf24l01.c ****   
+ 435              		.loc 1 88 11 is_stmt 0 view .LVU72
+ 436 0014 46F02003 		orr	r3, r6, #32
+ 437 0018 8DF80F30 		strb	r3, [sp, #15]
+  90:driverslib/nrf24l01.c ****   NRF_SPI_Write_Read(&spi_send_data,&STATUS_VALUE,1);
+ 438              		.loc 1 90 3 is_stmt 1 view .LVU73
+ 439 001c 0021     		movs	r1, #0
+ 440 001e 0846     		mov	r0, r1
+ 441              	.LVL43:
+  90:driverslib/nrf24l01.c ****   NRF_SPI_Write_Read(&spi_send_data,&STATUS_VALUE,1);
+ 442              		.loc 1 90 3 is_stmt 0 view .LVU74
+ 443 0020 FFF7FEFF 		bl	NRF_Set_GPIO
+ 444              	.LVL44:
+  91:driverslib/nrf24l01.c ****   NRF_SPI_Write_Read(data,temp,len);
+ 445              		.loc 1 91 3 is_stmt 1 view .LVU75
+ 446 0024 DFF85080 		ldr	r8, .L28+4
+ 447 0028 4FF03209 		mov	r9, #50
+ 448 002c CDF80090 		str	r9, [sp]
+ 449 0030 0123     		movs	r3, #1
+ 450 0032 104A     		ldr	r2, .L28
+ 451 0034 0DF10F01 		add	r1, sp, #15
+ 452 0038 D8F80000 		ldr	r0, [r8]
+ 453 003c FFF7FEFF 		bl	HAL_SPI_TransmitReceive
+ 454              	.LVL45:
+  92:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CSN,HIGH);
+ 455              		.loc 1 92 3 view .LVU76
+ 456 0040 CDF80090 		str	r9, [sp]
+ 457 0044 2B46     		mov	r3, r5
+ 458 0046 2246     		mov	r2, r4
+ 459 0048 3946     		mov	r1, r7
+ 460 004a D8F80000 		ldr	r0, [r8]
+ 461 004e FFF7FEFF 		bl	HAL_SPI_TransmitReceive
+ 462              	.LVL46:
+  93:driverslib/nrf24l01.c ****   
+ 463              		.loc 1 93 3 view .LVU77
+ 464 0052 0121     		movs	r1, #1
+ 465 0054 0020     		movs	r0, #0
+ 466 0056 FFF7FEFF 		bl	NRF_Set_GPIO
+ 467              	.LVL47:
+  95:driverslib/nrf24l01.c ****   free(temp);
+ 468              		.loc 1 95 3 view .LVU78
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 13
+
+
+ 469 005a 2A46     		mov	r2, r5
+ 470 005c 2146     		mov	r1, r4
+ 471 005e 3046     		mov	r0, r6
+ 472 0060 FFF7FEFF 		bl	NRF_Read_Bytes
+ 473              	.LVL48:
+  96:driverslib/nrf24l01.c ****   return 1;
+ 474              		.loc 1 96 3 view .LVU79
+ 475 0064 2046     		mov	r0, r4
+ 476 0066 FFF7FEFF 		bl	free
+ 477              	.LVL49:
+  97:driverslib/nrf24l01.c **** }
+ 478              		.loc 1 97 3 view .LVU80
+  98:driverslib/nrf24l01.c **** 
+ 479              		.loc 1 98 1 is_stmt 0 view .LVU81
+ 480 006a 0120     		movs	r0, #1
+ 481 006c 05B0     		add	sp, sp, #20
+ 482              	.LCFI13:
+ 483              		.cfi_def_cfa_offset 28
+ 484              		@ sp needed
+ 485 006e BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 486              	.LVL50:
+ 487              	.L29:
+  98:driverslib/nrf24l01.c **** 
+ 488              		.loc 1 98 1 view .LVU82
+ 489 0072 00BF     		.align	2
+ 490              	.L28:
+ 491 0074 00000000 		.word	STATUS_VALUE
+ 492 0078 00000000 		.word	SPI_USE
+ 493              		.cfi_endproc
+ 494              	.LFE69:
+ 496              		.section	.text.NRF_Set_Tx_Addr,"ax",%progbits
+ 497              		.align	1
+ 498              		.global	NRF_Set_Tx_Addr
+ 499              		.syntax unified
+ 500              		.thumb
+ 501              		.thumb_func
+ 502              		.fpu softvfp
+ 504              	NRF_Set_Tx_Addr:
+ 505              	.LVL51:
+ 506              	.LFB71:
+ 151:driverslib/nrf24l01.c ****   // the lengh of the array must be 5
+ 507              		.loc 1 151 58 is_stmt 1 view -0
+ 508              		.cfi_startproc
+ 509              		@ args = 0, pretend = 0, frame = 0
+ 510              		@ frame_needed = 0, uses_anonymous_args = 0
+ 154:driverslib/nrf24l01.c ****   if(size_check!=sizeof(TX_ADDRESS)){
+ 511              		.loc 1 154 3 view .LVU84
+ 155:driverslib/nrf24l01.c ****     return 0;
+ 512              		.loc 1 155 3 view .LVU85
+ 155:driverslib/nrf24l01.c ****     return 0;
+ 513              		.loc 1 155 5 is_stmt 0 view .LVU86
+ 514 0000 0529     		cmp	r1, #5
+ 515 0002 01D0     		beq	.L37
+ 156:driverslib/nrf24l01.c ****   }
+ 516              		.loc 1 156 12 view .LVU87
+ 517 0004 0020     		movs	r0, #0
+ 518              	.LVL52:
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 14
+
+
+ 160:driverslib/nrf24l01.c **** 
+ 519              		.loc 1 160 1 view .LVU88
+ 520 0006 7047     		bx	lr
+ 521              	.LVL53:
+ 522              	.L37:
+ 151:driverslib/nrf24l01.c ****   // the lengh of the array must be 5
+ 523              		.loc 1 151 58 view .LVU89
+ 524 0008 08B5     		push	{r3, lr}
+ 525              	.LCFI14:
+ 526              		.cfi_def_cfa_offset 8
+ 527              		.cfi_offset 3, -8
+ 528              		.cfi_offset 14, -4
+ 158:driverslib/nrf24l01.c ****   return result;
+ 529              		.loc 1 158 3 is_stmt 1 view .LVU90
+ 158:driverslib/nrf24l01.c ****   return result;
+ 530              		.loc 1 158 10 is_stmt 0 view .LVU91
+ 531 000a CAB2     		uxtb	r2, r1
+ 532 000c 0146     		mov	r1, r0
+ 533              	.LVL54:
+ 158:driverslib/nrf24l01.c ****   return result;
+ 534              		.loc 1 158 10 view .LVU92
+ 535 000e 1020     		movs	r0, #16
+ 536              	.LVL55:
+ 158:driverslib/nrf24l01.c ****   return result;
+ 537              		.loc 1 158 10 view .LVU93
+ 538 0010 FFF7FEFF 		bl	NRF_Write_Bytes
+ 539              	.LVL56:
+ 159:driverslib/nrf24l01.c **** }
+ 540              		.loc 1 159 3 is_stmt 1 view .LVU94
+ 160:driverslib/nrf24l01.c **** 
+ 541              		.loc 1 160 1 is_stmt 0 view .LVU95
+ 542 0014 08BD     		pop	{r3, pc}
+ 543              		.cfi_endproc
+ 544              	.LFE71:
+ 546              		.section	.text.NRF_Set_Rx_Addr,"ax",%progbits
+ 547              		.align	1
+ 548              		.global	NRF_Set_Rx_Addr
+ 549              		.syntax unified
+ 550              		.thumb
+ 551              		.thumb_func
+ 552              		.fpu softvfp
+ 554              	NRF_Set_Rx_Addr:
+ 555              	.LVL57:
+ 556              	.LFB72:
+ 162:driverslib/nrf24l01.c ****    // the lengh of the array must be 5
+ 557              		.loc 1 162 65 is_stmt 1 view -0
+ 558              		.cfi_startproc
+ 559              		@ args = 0, pretend = 0, frame = 0
+ 560              		@ frame_needed = 0, uses_anonymous_args = 0
+ 162:driverslib/nrf24l01.c ****    // the lengh of the array must be 5
+ 561              		.loc 1 162 65 is_stmt 0 view .LVU97
+ 562 0000 70B5     		push	{r4, r5, r6, lr}
+ 563              	.LCFI15:
+ 564              		.cfi_def_cfa_offset 16
+ 565              		.cfi_offset 4, -16
+ 566              		.cfi_offset 5, -12
+ 567              		.cfi_offset 6, -8
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 15
+
+
+ 568              		.cfi_offset 14, -4
+ 173:driverslib/nrf24l01.c ****   if(size_check!=sizeof(RX_ADDRESS)){
+ 569              		.loc 1 173 3 is_stmt 1 view .LVU98
+ 570              	.LVL58:
+ 174:driverslib/nrf24l01.c ****     return 0;
+ 571              		.loc 1 174 3 view .LVU99
+ 174:driverslib/nrf24l01.c ****     return 0;
+ 572              		.loc 1 174 5 is_stmt 0 view .LVU100
+ 573 0002 0F29     		cmp	r1, #15
+ 574 0004 1FD1     		bne	.L44
+ 575 0006 0646     		mov	r6, r0
+ 576              	.LBB2:
+ 178:driverslib/nrf24l01.c ****     result&=NRF_Write_Bytes(RX_ADDR_P0 + i,rx_addrs[i],sizeof(RX_ADDRESS[0]));
+ 577              		.loc 1 178 11 view .LVU101
+ 578 0008 0024     		movs	r4, #0
+ 579              	.LBE2:
+ 173:driverslib/nrf24l01.c ****   if(size_check!=sizeof(RX_ADDRESS)){
+ 580              		.loc 1 173 11 view .LVU102
+ 581 000a 0125     		movs	r5, #1
+ 582 000c 0AE0     		b	.L40
+ 583              	.LVL59:
+ 584              	.L41:
+ 585              	.LBB3:
+ 179:driverslib/nrf24l01.c ****   }
+ 586              		.loc 1 179 5 is_stmt 1 discriminator 3 view .LVU103
+ 179:driverslib/nrf24l01.c ****   }
+ 587              		.loc 1 179 52 is_stmt 0 discriminator 3 view .LVU104
+ 588 000e 04EB8401 		add	r1, r4, r4, lsl #2
+ 179:driverslib/nrf24l01.c ****   }
+ 589              		.loc 1 179 13 discriminator 3 view .LVU105
+ 590 0012 04F10A00 		add	r0, r4, #10
+ 591 0016 0522     		movs	r2, #5
+ 592 0018 3144     		add	r1, r1, r6
+ 593 001a C0B2     		uxtb	r0, r0
+ 594 001c FFF7FEFF 		bl	NRF_Write_Bytes
+ 595              	.LVL60:
+ 179:driverslib/nrf24l01.c ****   }
+ 596              		.loc 1 179 11 discriminator 3 view .LVU106
+ 597 0020 0540     		ands	r5, r5, r0
+ 598              	.LVL61:
+ 178:driverslib/nrf24l01.c ****     result&=NRF_Write_Bytes(RX_ADDR_P0 + i,rx_addrs[i],sizeof(RX_ADDRESS[0]));
+ 599              		.loc 1 178 19 is_stmt 1 discriminator 3 view .LVU107
+ 600 0022 0134     		adds	r4, r4, #1
+ 601              	.LVL62:
+ 602              	.L40:
+ 178:driverslib/nrf24l01.c ****     result&=NRF_Write_Bytes(RX_ADDR_P0 + i,rx_addrs[i],sizeof(RX_ADDRESS[0]));
+ 603              		.loc 1 178 15 discriminator 1 view .LVU108
+ 178:driverslib/nrf24l01.c ****     result&=NRF_Write_Bytes(RX_ADDR_P0 + i,rx_addrs[i],sizeof(RX_ADDRESS[0]));
+ 604              		.loc 1 178 3 is_stmt 0 discriminator 1 view .LVU109
+ 605 0024 012C     		cmp	r4, #1
+ 606 0026 F2DD     		ble	.L41
+ 607              	.LBE3:
+ 608              	.LBB4:
+ 181:driverslib/nrf24l01.c ****     result&=NRF_Write_Reg(RX_ADDR_P0+2+i,rx_addrs[2][i]);
+ 609              		.loc 1 181 11 view .LVU110
+ 610 0028 0024     		movs	r4, #0
+ 611              	.LVL63:
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 16
+
+
+ 181:driverslib/nrf24l01.c ****     result&=NRF_Write_Reg(RX_ADDR_P0+2+i,rx_addrs[2][i]);
+ 612              		.loc 1 181 11 view .LVU111
+ 613 002a 08E0     		b	.L42
+ 614              	.LVL64:
+ 615              	.L43:
+ 182:driverslib/nrf24l01.c ****   }
+ 616              		.loc 1 182 5 is_stmt 1 discriminator 3 view .LVU112
+ 182:driverslib/nrf24l01.c ****   }
+ 617              		.loc 1 182 13 is_stmt 0 discriminator 3 view .LVU113
+ 618 002c 3319     		adds	r3, r6, r4
+ 619 002e 04F10C00 		add	r0, r4, #12
+ 620 0032 997A     		ldrb	r1, [r3, #10]	@ zero_extendqisi2
+ 621 0034 C0B2     		uxtb	r0, r0
+ 622 0036 FFF7FEFF 		bl	NRF_Write_Reg
+ 623              	.LVL65:
+ 182:driverslib/nrf24l01.c ****   }
+ 624              		.loc 1 182 11 discriminator 3 view .LVU114
+ 625 003a 0540     		ands	r5, r5, r0
+ 626              	.LVL66:
+ 181:driverslib/nrf24l01.c ****     result&=NRF_Write_Reg(RX_ADDR_P0+2+i,rx_addrs[2][i]);
+ 627              		.loc 1 181 19 is_stmt 1 discriminator 3 view .LVU115
+ 628 003c 0134     		adds	r4, r4, #1
+ 629              	.LVL67:
+ 630              	.L42:
+ 181:driverslib/nrf24l01.c ****     result&=NRF_Write_Reg(RX_ADDR_P0+2+i,rx_addrs[2][i]);
+ 631              		.loc 1 181 15 discriminator 1 view .LVU116
+ 181:driverslib/nrf24l01.c ****     result&=NRF_Write_Reg(RX_ADDR_P0+2+i,rx_addrs[2][i]);
+ 632              		.loc 1 181 3 is_stmt 0 discriminator 1 view .LVU117
+ 633 003e 032C     		cmp	r4, #3
+ 634 0040 F4DD     		ble	.L43
+ 635              	.LVL68:
+ 636              	.L39:
+ 181:driverslib/nrf24l01.c ****     result&=NRF_Write_Reg(RX_ADDR_P0+2+i,rx_addrs[2][i]);
+ 637              		.loc 1 181 3 discriminator 1 view .LVU118
+ 638              	.LBE4:
+ 185:driverslib/nrf24l01.c **** 
+ 639              		.loc 1 185 1 view .LVU119
+ 640 0042 2846     		mov	r0, r5
+ 641 0044 70BD     		pop	{r4, r5, r6, pc}
+ 642              	.LVL69:
+ 643              	.L44:
+ 175:driverslib/nrf24l01.c ****   }
+ 644              		.loc 1 175 12 view .LVU120
+ 645 0046 0025     		movs	r5, #0
+ 646 0048 FBE7     		b	.L39
+ 647              		.cfi_endproc
+ 648              	.LFE72:
+ 650              		.section	.text.NRF_Init,"ax",%progbits
+ 651              		.align	1
+ 652              		.global	NRF_Init
+ 653              		.syntax unified
+ 654              		.thumb
+ 655              		.thumb_func
+ 656              		.fpu softvfp
+ 658              	NRF_Init:
+ 659              	.LVL70:
+ 660              	.LFB70:
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 17
+
+
+ 104:driverslib/nrf24l01.c ****   
+ 661              		.loc 1 104 68 is_stmt 1 view -0
+ 662              		.cfi_startproc
+ 663              		@ args = 8, pretend = 0, frame = 0
+ 664              		@ frame_needed = 0, uses_anonymous_args = 0
+ 104:driverslib/nrf24l01.c ****   
+ 665              		.loc 1 104 68 is_stmt 0 view .LVU122
+ 666 0000 70B5     		push	{r4, r5, r6, lr}
+ 667              	.LCFI16:
+ 668              		.cfi_def_cfa_offset 16
+ 669              		.cfi_offset 4, -16
+ 670              		.cfi_offset 5, -12
+ 671              		.cfi_offset 6, -8
+ 672              		.cfi_offset 14, -4
+ 673 0002 0E46     		mov	r6, r1
+ 106:driverslib/nrf24l01.c ****   uint8_t retry_time=0;
+ 674              		.loc 1 106 3 is_stmt 1 view .LVU123
+ 675              	.LVL71:
+ 107:driverslib/nrf24l01.c **** 
+ 676              		.loc 1 107 3 view .LVU124
+ 109:driverslib/nrf24l01.c ****   CSN_GPIO_PORT=csn_gpio_port;
+ 677              		.loc 1 109 3 view .LVU125
+ 109:driverslib/nrf24l01.c ****   CSN_GPIO_PORT=csn_gpio_port;
+ 678              		.loc 1 109 10 is_stmt 0 view .LVU126
+ 679 0004 2C49     		ldr	r1, .L52
+ 680              	.LVL72:
+ 109:driverslib/nrf24l01.c ****   CSN_GPIO_PORT=csn_gpio_port;
+ 681              		.loc 1 109 10 view .LVU127
+ 682 0006 0860     		str	r0, [r1]
+ 110:driverslib/nrf24l01.c ****   CE_GPIO_PORT=ce_gpio_port;
+ 683              		.loc 1 110 3 is_stmt 1 view .LVU128
+ 110:driverslib/nrf24l01.c ****   CE_GPIO_PORT=ce_gpio_port;
+ 684              		.loc 1 110 16 is_stmt 0 view .LVU129
+ 685 0008 2C49     		ldr	r1, .L52+4
+ 686 000a 0A60     		str	r2, [r1]
+ 111:driverslib/nrf24l01.c ****   CSN_GPIO_PIN=csn_gpio_pin;
+ 687              		.loc 1 111 3 is_stmt 1 view .LVU130
+ 111:driverslib/nrf24l01.c ****   CSN_GPIO_PIN=csn_gpio_pin;
+ 688              		.loc 1 111 15 is_stmt 0 view .LVU131
+ 689 000c 0499     		ldr	r1, [sp, #16]
+ 690 000e 2C4A     		ldr	r2, .L52+8
+ 691              	.LVL73:
+ 111:driverslib/nrf24l01.c ****   CSN_GPIO_PIN=csn_gpio_pin;
+ 692              		.loc 1 111 15 view .LVU132
+ 693 0010 1160     		str	r1, [r2]
+ 112:driverslib/nrf24l01.c ****   CE_GPIO_PIN=ce_gpio_pin;
+ 694              		.loc 1 112 3 is_stmt 1 view .LVU133
+ 112:driverslib/nrf24l01.c ****   CE_GPIO_PIN=ce_gpio_pin;
+ 695              		.loc 1 112 15 is_stmt 0 view .LVU134
+ 696 0012 2C4A     		ldr	r2, .L52+12
+ 697 0014 1360     		str	r3, [r2]
+ 113:driverslib/nrf24l01.c **** 
+ 698              		.loc 1 113 3 is_stmt 1 view .LVU135
+ 113:driverslib/nrf24l01.c **** 
+ 699              		.loc 1 113 14 is_stmt 0 view .LVU136
+ 700 0016 059A     		ldr	r2, [sp, #20]
+ 701 0018 2B4B     		ldr	r3, .L52+16
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 18
+
+
+ 702              	.LVL74:
+ 113:driverslib/nrf24l01.c **** 
+ 703              		.loc 1 113 14 view .LVU137
+ 704 001a 1A60     		str	r2, [r3]
+ 107:driverslib/nrf24l01.c **** 
+ 705              		.loc 1 107 11 view .LVU138
+ 706 001c 0025     		movs	r5, #0
+ 707              	.LVL75:
+ 708              	.L47:
+ 116:driverslib/nrf24l01.c ****   if(retry_time>5){
+ 709              		.loc 1 116 3 is_stmt 1 view .LVU139
+ 116:driverslib/nrf24l01.c ****   if(retry_time>5){
+ 710              		.loc 1 116 13 is_stmt 0 view .LVU140
+ 711 001e 0135     		adds	r5, r5, #1
+ 712              	.LVL76:
+ 116:driverslib/nrf24l01.c ****   if(retry_time>5){
+ 713              		.loc 1 116 13 view .LVU141
+ 714 0020 EDB2     		uxtb	r5, r5
+ 715              	.LVL77:
+ 117:driverslib/nrf24l01.c ****     return 0;
+ 716              		.loc 1 117 3 is_stmt 1 view .LVU142
+ 117:driverslib/nrf24l01.c ****     return 0;
+ 717              		.loc 1 117 5 is_stmt 0 view .LVU143
+ 718 0022 052D     		cmp	r5, #5
+ 719 0024 43D8     		bhi	.L49
+ 120:driverslib/nrf24l01.c **** 
+ 720              		.loc 1 120 3 is_stmt 1 view .LVU144
+ 120:driverslib/nrf24l01.c **** 
+ 721              		.loc 1 120 11 is_stmt 0 view .LVU145
+ 722 0026 294B     		ldr	r3, .L52+20
+ 723 0028 1978     		ldrb	r1, [r3]	@ zero_extendqisi2
+ 724 002a 41F00201 		orr	r1, r1, #2
+ 725 002e 0020     		movs	r0, #0
+ 726 0030 FFF7FEFF 		bl	NRF_Write_Reg
+ 727              	.LVL78:
+ 120:driverslib/nrf24l01.c **** 
+ 728              		.loc 1 120 9 view .LVU146
+ 729 0034 00F00104 		and	r4, r0, #1
+ 730              	.LVL79:
+ 122:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(EN_AA,0X01); //自动ACK
+ 731              		.loc 1 122 3 is_stmt 1 view .LVU147
+ 732 0038 0A20     		movs	r0, #10
+ 733 003a FFF7FEFF 		bl	HAL_Delay
+ 734              	.LVL80:
+ 123:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(SETUP_RETR,0x0F); //自动重发
+ 735              		.loc 1 123 3 view .LVU148
+ 123:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(SETUP_RETR,0x0F); //自动重发
+ 736              		.loc 1 123 11 is_stmt 0 view .LVU149
+ 737 003e 0121     		movs	r1, #1
+ 738 0040 0846     		mov	r0, r1
+ 739 0042 FFF7FEFF 		bl	NRF_Write_Reg
+ 740              	.LVL81:
+ 123:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(SETUP_RETR,0x0F); //自动重发
+ 741              		.loc 1 123 9 view .LVU150
+ 742 0046 0440     		ands	r4, r4, r0
+ 743              	.LVL82:
+ 124:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(RF_CH,0); //2.4ghz
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 19
+
+
+ 744              		.loc 1 124 3 is_stmt 1 view .LVU151
+ 124:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(RF_CH,0); //2.4ghz
+ 745              		.loc 1 124 11 is_stmt 0 view .LVU152
+ 746 0048 0F21     		movs	r1, #15
+ 747 004a 0420     		movs	r0, #4
+ 748 004c FFF7FEFF 		bl	NRF_Write_Reg
+ 749              	.LVL83:
+ 124:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(RF_CH,0); //2.4ghz
+ 750              		.loc 1 124 9 view .LVU153
+ 751 0050 0440     		ands	r4, r4, r0
+ 752              	.LVL84:
+ 125:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(RX_PW_P0,RX_PLOAD_WIDTH); 
+ 753              		.loc 1 125 3 is_stmt 1 view .LVU154
+ 125:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(RX_PW_P0,RX_PLOAD_WIDTH); 
+ 754              		.loc 1 125 11 is_stmt 0 view .LVU155
+ 755 0052 0021     		movs	r1, #0
+ 756 0054 0520     		movs	r0, #5
+ 757 0056 FFF7FEFF 		bl	NRF_Write_Reg
+ 758              	.LVL85:
+ 125:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(RX_PW_P0,RX_PLOAD_WIDTH); 
+ 759              		.loc 1 125 9 view .LVU156
+ 760 005a 0440     		ands	r4, r4, r0
+ 761              	.LVL86:
+ 126:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(RF_SETUP,0x0E); //2mhz 0db
+ 762              		.loc 1 126 3 is_stmt 1 view .LVU157
+ 126:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(RF_SETUP,0x0E); //2mhz 0db
+ 763              		.loc 1 126 11 is_stmt 0 view .LVU158
+ 764 005c 0A21     		movs	r1, #10
+ 765 005e 1120     		movs	r0, #17
+ 766 0060 FFF7FEFF 		bl	NRF_Write_Reg
+ 767              	.LVL87:
+ 126:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(RF_SETUP,0x0E); //2mhz 0db
+ 768              		.loc 1 126 9 view .LVU159
+ 769 0064 0440     		ands	r4, r4, r0
+ 770              	.LVL88:
+ 127:driverslib/nrf24l01.c ****   
+ 771              		.loc 1 127 3 is_stmt 1 view .LVU160
+ 127:driverslib/nrf24l01.c ****   
+ 772              		.loc 1 127 11 is_stmt 0 view .LVU161
+ 773 0066 0E21     		movs	r1, #14
+ 774 0068 0620     		movs	r0, #6
+ 775 006a FFF7FEFF 		bl	NRF_Write_Reg
+ 776              	.LVL89:
+ 127:driverslib/nrf24l01.c ****   
+ 777              		.loc 1 127 9 view .LVU162
+ 778 006e 0440     		ands	r4, r4, r0
+ 779              	.LVL90:
+ 129:driverslib/nrf24l01.c ****     return 0;
+ 780              		.loc 1 129 3 is_stmt 1 view .LVU163
+ 129:driverslib/nrf24l01.c ****     return 0;
+ 781              		.loc 1 129 5 is_stmt 0 view .LVU164
+ 782 0070 052E     		cmp	r6, #5
+ 783 0072 1FD8     		bhi	.L50
+ 133:driverslib/nrf24l01.c ****   temp=(1<<rx_channel_num)-1;
+ 784              		.loc 1 133 3 is_stmt 1 view .LVU165
+ 785              	.LVL91:
+ 134:driverslib/nrf24l01.c ****   
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 20
+
+
+ 786              		.loc 1 134 3 view .LVU166
+ 134:driverslib/nrf24l01.c ****   
+ 787              		.loc 1 134 10 is_stmt 0 view .LVU167
+ 788 0074 0121     		movs	r1, #1
+ 789 0076 B140     		lsls	r1, r1, r6
+ 134:driverslib/nrf24l01.c ****   
+ 790              		.loc 1 134 27 view .LVU168
+ 791 0078 C9B2     		uxtb	r1, r1
+ 134:driverslib/nrf24l01.c ****   
+ 792              		.loc 1 134 7 view .LVU169
+ 793 007a 0139     		subs	r1, r1, #1
+ 794              	.LVL92:
+ 136:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(NRF_CONFIG,CONFIG_VALUE|NRF_RX);     // 设置为接收模式
+ 795              		.loc 1 136 3 is_stmt 1 view .LVU170
+ 136:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(NRF_CONFIG,CONFIG_VALUE|NRF_RX);     // 设置为接收模式
+ 796              		.loc 1 136 11 is_stmt 0 view .LVU171
+ 797 007c C9B2     		uxtb	r1, r1
+ 136:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(NRF_CONFIG,CONFIG_VALUE|NRF_RX);     // 设置为接收模式
+ 798              		.loc 1 136 11 view .LVU172
+ 799 007e 0220     		movs	r0, #2
+ 800 0080 FFF7FEFF 		bl	NRF_Write_Reg
+ 801              	.LVL93:
+ 136:driverslib/nrf24l01.c ****   result&=NRF_Write_Reg(NRF_CONFIG,CONFIG_VALUE|NRF_RX);     // 设置为接收模式
+ 802              		.loc 1 136 9 view .LVU173
+ 803 0084 0440     		ands	r4, r4, r0
+ 804              	.LVL94:
+ 137:driverslib/nrf24l01.c ****   
+ 805              		.loc 1 137 3 is_stmt 1 view .LVU174
+ 137:driverslib/nrf24l01.c ****   
+ 806              		.loc 1 137 11 is_stmt 0 view .LVU175
+ 807 0086 114B     		ldr	r3, .L52+20
+ 808 0088 1978     		ldrb	r1, [r3]	@ zero_extendqisi2
+ 809 008a 41F00301 		orr	r1, r1, #3
+ 810 008e 0020     		movs	r0, #0
+ 811 0090 FFF7FEFF 		bl	NRF_Write_Reg
+ 812              	.LVL95:
+ 137:driverslib/nrf24l01.c ****   
+ 813              		.loc 1 137 9 view .LVU176
+ 814 0094 0440     		ands	r4, r4, r0
+ 815              	.LVL96:
+ 139:driverslib/nrf24l01.c ****   
+ 816              		.loc 1 139 3 is_stmt 1 view .LVU177
+ 139:driverslib/nrf24l01.c ****   
+ 817              		.loc 1 139 11 is_stmt 0 view .LVU178
+ 818 0096 0521     		movs	r1, #5
+ 819 0098 0D48     		ldr	r0, .L52+24
+ 820 009a FFF7FEFF 		bl	NRF_Set_Tx_Addr
+ 821              	.LVL97:
+ 139:driverslib/nrf24l01.c ****   
+ 822              		.loc 1 139 9 view .LVU179
+ 823 009e 0440     		ands	r4, r4, r0
+ 824              	.LVL98:
+ 141:driverslib/nrf24l01.c ****   
+ 825              		.loc 1 141 3 is_stmt 1 view .LVU180
+ 826 00a0 0F21     		movs	r1, #15
+ 827 00a2 0C48     		ldr	r0, .L52+28
+ 828 00a4 FFF7FEFF 		bl	NRF_Set_Rx_Addr
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 21
+
+
+ 829              	.LVL99:
+ 143:driverslib/nrf24l01.c ****     result=1;
+ 830              		.loc 1 143 3 view .LVU181
+ 143:driverslib/nrf24l01.c ****     result=1;
+ 831              		.loc 1 143 5 is_stmt 0 view .LVU182
+ 832 00a8 002C     		cmp	r4, #0
+ 833 00aa B8D0     		beq	.L47
+ 834 00ac 00E0     		b	.L48
+ 835              	.LVL100:
+ 836              	.L49:
+ 118:driverslib/nrf24l01.c ****   }
+ 837              		.loc 1 118 12 view .LVU183
+ 838 00ae 0024     		movs	r4, #0
+ 839              	.LVL101:
+ 840              	.L48:
+ 149:driverslib/nrf24l01.c **** 
+ 841              		.loc 1 149 1 view .LVU184
+ 842 00b0 2046     		mov	r0, r4
+ 843 00b2 70BD     		pop	{r4, r5, r6, pc}
+ 844              	.LVL102:
+ 845              	.L50:
+ 130:driverslib/nrf24l01.c **** 
+ 846              		.loc 1 130 12 view .LVU185
+ 847 00b4 0024     		movs	r4, #0
+ 848              	.LVL103:
+ 130:driverslib/nrf24l01.c **** 
+ 849              		.loc 1 130 12 view .LVU186
+ 850 00b6 FBE7     		b	.L48
+ 851              	.L53:
+ 852              		.align	2
+ 853              	.L52:
+ 854 00b8 00000000 		.word	SPI_USE
+ 855 00bc 00000000 		.word	CSN_GPIO_PORT
+ 856 00c0 00000000 		.word	CE_GPIO_PORT
+ 857 00c4 00000000 		.word	CSN_GPIO_PIN
+ 858 00c8 00000000 		.word	CE_GPIO_PIN
+ 859 00cc 00000000 		.word	.LANCHOR0
+ 860 00d0 00000000 		.word	.LANCHOR1
+ 861 00d4 00000000 		.word	.LANCHOR2
+ 862              		.cfi_endproc
+ 863              	.LFE70:
+ 865              		.section	.text.NRF_Enable_Interrupt,"ax",%progbits
+ 866              		.align	1
+ 867              		.global	NRF_Enable_Interrupt
+ 868              		.syntax unified
+ 869              		.thumb
+ 870              		.thumb_func
+ 871              		.fpu softvfp
+ 873              	NRF_Enable_Interrupt:
+ 874              	.LVL104:
+ 875              	.LFB74:
+ 194:driverslib/nrf24l01.c **** 
+ 195:driverslib/nrf24l01.c **** void NRF_Enable_Interrupt(NRF_IT IT_Mask){
+ 876              		.loc 1 195 42 is_stmt 1 view -0
+ 877              		.cfi_startproc
+ 878              		@ args = 0, pretend = 0, frame = 0
+ 879              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 22
+
+
+ 880              		.loc 1 195 42 is_stmt 0 view .LVU188
+ 881 0000 08B5     		push	{r3, lr}
+ 882              	.LCFI17:
+ 883              		.cfi_def_cfa_offset 8
+ 884              		.cfi_offset 3, -8
+ 885              		.cfi_offset 14, -4
+ 196:driverslib/nrf24l01.c ****   CONFIG_VALUE&=~IT_Mask;
+ 886              		.loc 1 196 3 is_stmt 1 view .LVU189
+ 887              		.loc 1 196 15 is_stmt 0 view .LVU190
+ 888 0002 044B     		ldr	r3, .L56
+ 889 0004 1978     		ldrb	r1, [r3]	@ zero_extendqisi2
+ 890 0006 21EA0001 		bic	r1, r1, r0
+ 891 000a 1970     		strb	r1, [r3]
+ 197:driverslib/nrf24l01.c ****   NRF_Write_Reg(NRF_CONFIG,CONFIG_VALUE);
+ 892              		.loc 1 197 3 is_stmt 1 view .LVU191
+ 893 000c 0020     		movs	r0, #0
+ 894              	.LVL105:
+ 895              		.loc 1 197 3 is_stmt 0 view .LVU192
+ 896 000e FFF7FEFF 		bl	NRF_Write_Reg
+ 897              	.LVL106:
+ 198:driverslib/nrf24l01.c **** }
+ 898              		.loc 1 198 1 view .LVU193
+ 899 0012 08BD     		pop	{r3, pc}
+ 900              	.L57:
+ 901              		.align	2
+ 902              	.L56:
+ 903 0014 00000000 		.word	.LANCHOR0
+ 904              		.cfi_endproc
+ 905              	.LFE74:
+ 907              		.section	.text.NRF_Install_TX_Data,"ax",%progbits
+ 908              		.align	1
+ 909              		.global	NRF_Install_TX_Data
+ 910              		.syntax unified
+ 911              		.thumb
+ 912              		.thumb_func
+ 913              		.fpu softvfp
+ 915              	NRF_Install_TX_Data:
+ 916              	.LVL107:
+ 917              	.LFB77:
+ 199:driverslib/nrf24l01.c **** 
+ 200:driverslib/nrf24l01.c **** void NRF_Send_Message(){
+ 201:driverslib/nrf24l01.c ****   
+ 202:driverslib/nrf24l01.c ****   NRF_Set_Mode(NRF_TX,CRC_ENABLE); 
+ 203:driverslib/nrf24l01.c ****   NRF_Write_Bytes(W_TX_PAYLOAD,NRF_TX_Data,TX_PLOAD_WIDTH);
+ 204:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CE,HIGH);
+ 205:driverslib/nrf24l01.c ****   
+ 206:driverslib/nrf24l01.c ****   do{
+ 207:driverslib/nrf24l01.c ****     STATUS_VALUE=NRF_Read_Reg(STATUS);
+ 208:driverslib/nrf24l01.c ****     if((STATUS_VALUE&0x10)==0x10){
+ 209:driverslib/nrf24l01.c ****       //NRF_Write_Reg(FLUSH_TX,0);
+ 210:driverslib/nrf24l01.c ****       NRF_Write_Reg(STATUS,0x10);  //if MAX_RT is asserted it must be cleared to enable further com
+ 211:driverslib/nrf24l01.c ****     }
+ 212:driverslib/nrf24l01.c ****   }while((STATUS_VALUE&0x20)==0);
+ 213:driverslib/nrf24l01.c ****   NRF_Send_Callback();
+ 214:driverslib/nrf24l01.c ****    
+ 215:driverslib/nrf24l01.c ****   NRF_Write_Reg(STATUS,0x20);
+ 216:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CE,LOW);
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 23
+
+
+ 217:driverslib/nrf24l01.c **** 
+ 218:driverslib/nrf24l01.c **** }
+ 219:driverslib/nrf24l01.c **** 
+ 220:driverslib/nrf24l01.c **** uint8_t FIFO_State;
+ 221:driverslib/nrf24l01.c **** void NRF_Receive(){
+ 222:driverslib/nrf24l01.c **** 
+ 223:driverslib/nrf24l01.c **** 
+ 224:driverslib/nrf24l01.c ****   //
+ 225:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CE,HIGH);
+ 226:driverslib/nrf24l01.c ****   NRF_Set_Mode(NRF_RX,CRC_ENABLE); 
+ 227:driverslib/nrf24l01.c ****   
+ 228:driverslib/nrf24l01.c ****   if(STATUS_VALUE<0x40){
+ 229:driverslib/nrf24l01.c ****     return ;
+ 230:driverslib/nrf24l01.c ****   }
+ 231:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CE,LOW);
+ 232:driverslib/nrf24l01.c ****   // 这里只是接收定长数据，如果要接收动态长度，需要一堆操作
+ 233:driverslib/nrf24l01.c ****   // 以后有时间再说吧
+ 234:driverslib/nrf24l01.c **** 
+ 235:driverslib/nrf24l01.c ****   FIFO_State=NRF_Read_Reg(0x17);
+ 236:driverslib/nrf24l01.c ****   if(FIFO_State & 1<<1){
+ 237:driverslib/nrf24l01.c ****     NRF_Write_Reg(FLUSH_RX,0);
+ 238:driverslib/nrf24l01.c ****     NRF_Write_Reg(STATUS,0xFF);
+ 239:driverslib/nrf24l01.c ****     return ;
+ 240:driverslib/nrf24l01.c ****   }
+ 241:driverslib/nrf24l01.c ****   NRF_Read_Bytes(R_RX_PAYLOAD,NRF_RX_Data,RX_PLOAD_WIDTH);
+ 242:driverslib/nrf24l01.c ****   
+ 243:driverslib/nrf24l01.c ****   NRF_Receive_Callback(NRF_RX_Data,RX_PLOAD_WIDTH);
+ 244:driverslib/nrf24l01.c ****   NRF_Write_Reg(STATUS,0xFF);  //清空STATUS
+ 245:driverslib/nrf24l01.c **** }
+ 246:driverslib/nrf24l01.c **** 
+ 247:driverslib/nrf24l01.c **** void NRF_Install_TX_Data(uint8_t *data,int len){
+ 918              		.loc 1 247 48 is_stmt 1 view -0
+ 919              		.cfi_startproc
+ 920              		@ args = 0, pretend = 0, frame = 0
+ 921              		@ frame_needed = 0, uses_anonymous_args = 0
+ 922              		.loc 1 247 48 is_stmt 0 view .LVU195
+ 923 0000 08B5     		push	{r3, lr}
+ 924              	.LCFI18:
+ 925              		.cfi_def_cfa_offset 8
+ 926              		.cfi_offset 3, -8
+ 927              		.cfi_offset 14, -4
+ 928 0002 0A46     		mov	r2, r1
+ 248:driverslib/nrf24l01.c ****   memcpy(NRF_TX_Data,data,len);
+ 929              		.loc 1 248 3 is_stmt 1 view .LVU196
+ 930 0004 0146     		mov	r1, r0
+ 931              	.LVL108:
+ 932              		.loc 1 248 3 is_stmt 0 view .LVU197
+ 933 0006 0248     		ldr	r0, .L60
+ 934              	.LVL109:
+ 935              		.loc 1 248 3 view .LVU198
+ 936 0008 FFF7FEFF 		bl	memcpy
+ 937              	.LVL110:
+ 249:driverslib/nrf24l01.c **** }
+ 938              		.loc 1 249 1 view .LVU199
+ 939 000c 08BD     		pop	{r3, pc}
+ 940              	.L61:
+ 941 000e 00BF     		.align	2
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 24
+
+
+ 942              	.L60:
+ 943 0010 00000000 		.word	.LANCHOR3
+ 944              		.cfi_endproc
+ 945              	.LFE77:
+ 947              		.section	.text.NRF_Receive_Callback,"ax",%progbits
+ 948              		.align	1
+ 949              		.weak	NRF_Receive_Callback
+ 950              		.syntax unified
+ 951              		.thumb
+ 952              		.thumb_func
+ 953              		.fpu softvfp
+ 955              	NRF_Receive_Callback:
+ 956              	.LVL111:
+ 957              	.LFB78:
+ 250:driverslib/nrf24l01.c **** __weak void NRF_Receive_Callback(uint8_t * data,int len){
+ 958              		.loc 1 250 57 is_stmt 1 view -0
+ 959              		.cfi_startproc
+ 960              		@ args = 0, pretend = 0, frame = 0
+ 961              		@ frame_needed = 0, uses_anonymous_args = 0
+ 962              		@ link register save eliminated.
+ 251:driverslib/nrf24l01.c ****   
+ 252:driverslib/nrf24l01.c **** }
+ 963              		.loc 1 252 1 view .LVU201
+ 964 0000 7047     		bx	lr
+ 965              		.cfi_endproc
+ 966              	.LFE78:
+ 968              		.section	.text.NRF_Receive,"ax",%progbits
+ 969              		.align	1
+ 970              		.global	NRF_Receive
+ 971              		.syntax unified
+ 972              		.thumb
+ 973              		.thumb_func
+ 974              		.fpu softvfp
+ 976              	NRF_Receive:
+ 977              	.LFB76:
+ 221:driverslib/nrf24l01.c **** 
+ 978              		.loc 1 221 19 view -0
+ 979              		.cfi_startproc
+ 980              		@ args = 0, pretend = 0, frame = 0
+ 981              		@ frame_needed = 0, uses_anonymous_args = 0
+ 982 0000 10B5     		push	{r4, lr}
+ 983              	.LCFI19:
+ 984              		.cfi_def_cfa_offset 8
+ 985              		.cfi_offset 4, -8
+ 986              		.cfi_offset 14, -4
+ 225:driverslib/nrf24l01.c ****   NRF_Set_Mode(NRF_RX,CRC_ENABLE); 
+ 987              		.loc 1 225 3 view .LVU203
+ 988 0002 0121     		movs	r1, #1
+ 989 0004 0846     		mov	r0, r1
+ 990 0006 FFF7FEFF 		bl	NRF_Set_GPIO
+ 991              	.LVL112:
+ 226:driverslib/nrf24l01.c ****   
+ 992              		.loc 1 226 3 view .LVU204
+ 993 000a 0121     		movs	r1, #1
+ 994 000c 0320     		movs	r0, #3
+ 995 000e FFF7FEFF 		bl	NRF_Set_Mode
+ 996              	.LVL113:
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 25
+
+
+ 228:driverslib/nrf24l01.c ****     return ;
+ 997              		.loc 1 228 3 view .LVU205
+ 228:driverslib/nrf24l01.c ****     return ;
+ 998              		.loc 1 228 18 is_stmt 0 view .LVU206
+ 999 0012 144B     		ldr	r3, .L69
+ 1000 0014 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 228:driverslib/nrf24l01.c ****     return ;
+ 1001              		.loc 1 228 5 view .LVU207
+ 1002 0016 3F2B     		cmp	r3, #63
+ 1003 0018 00D8     		bhi	.L67
+ 1004              	.L63:
+ 245:driverslib/nrf24l01.c **** 
+ 1005              		.loc 1 245 1 view .LVU208
+ 1006 001a 10BD     		pop	{r4, pc}
+ 1007              	.L67:
+ 231:driverslib/nrf24l01.c ****   // 这里只是接收定长数据，如果要接收动态长度，需要一堆操作
+ 1008              		.loc 1 231 3 is_stmt 1 view .LVU209
+ 1009 001c 0021     		movs	r1, #0
+ 1010 001e 0120     		movs	r0, #1
+ 1011 0020 FFF7FEFF 		bl	NRF_Set_GPIO
+ 1012              	.LVL114:
+ 235:driverslib/nrf24l01.c ****   if(FIFO_State & 1<<1){
+ 1013              		.loc 1 235 3 view .LVU210
+ 235:driverslib/nrf24l01.c ****   if(FIFO_State & 1<<1){
+ 1014              		.loc 1 235 14 is_stmt 0 view .LVU211
+ 1015 0024 1720     		movs	r0, #23
+ 1016 0026 FFF7FEFF 		bl	NRF_Read_Reg
+ 1017              	.LVL115:
+ 235:driverslib/nrf24l01.c ****   if(FIFO_State & 1<<1){
+ 1018              		.loc 1 235 13 view .LVU212
+ 1019 002a 0F4B     		ldr	r3, .L69+4
+ 1020 002c 1870     		strb	r0, [r3]
+ 236:driverslib/nrf24l01.c ****     NRF_Write_Reg(FLUSH_RX,0);
+ 1021              		.loc 1 236 3 is_stmt 1 view .LVU213
+ 236:driverslib/nrf24l01.c ****     NRF_Write_Reg(FLUSH_RX,0);
+ 1022              		.loc 1 236 5 is_stmt 0 view .LVU214
+ 1023 002e 10F0020F 		tst	r0, #2
+ 1024 0032 0ED1     		bne	.L68
+ 241:driverslib/nrf24l01.c ****   
+ 1025              		.loc 1 241 3 is_stmt 1 view .LVU215
+ 1026 0034 0D4C     		ldr	r4, .L69+8
+ 1027 0036 0A22     		movs	r2, #10
+ 1028 0038 2146     		mov	r1, r4
+ 1029 003a 6120     		movs	r0, #97
+ 1030 003c FFF7FEFF 		bl	NRF_Read_Bytes
+ 1031              	.LVL116:
+ 243:driverslib/nrf24l01.c ****   NRF_Write_Reg(STATUS,0xFF);  //清空STATUS
+ 1032              		.loc 1 243 3 view .LVU216
+ 1033 0040 0A21     		movs	r1, #10
+ 1034 0042 2046     		mov	r0, r4
+ 1035 0044 FFF7FEFF 		bl	NRF_Receive_Callback
+ 1036              	.LVL117:
+ 244:driverslib/nrf24l01.c **** }
+ 1037              		.loc 1 244 3 view .LVU217
+ 1038 0048 FF21     		movs	r1, #255
+ 1039 004a 0720     		movs	r0, #7
+ 1040 004c FFF7FEFF 		bl	NRF_Write_Reg
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 26
+
+
+ 1041              	.LVL118:
+ 1042 0050 E3E7     		b	.L63
+ 1043              	.L68:
+ 237:driverslib/nrf24l01.c ****     NRF_Write_Reg(STATUS,0xFF);
+ 1044              		.loc 1 237 5 view .LVU218
+ 1045 0052 0021     		movs	r1, #0
+ 1046 0054 E220     		movs	r0, #226
+ 1047 0056 FFF7FEFF 		bl	NRF_Write_Reg
+ 1048              	.LVL119:
+ 238:driverslib/nrf24l01.c ****     return ;
+ 1049              		.loc 1 238 5 view .LVU219
+ 1050 005a FF21     		movs	r1, #255
+ 1051 005c 0720     		movs	r0, #7
+ 1052 005e FFF7FEFF 		bl	NRF_Write_Reg
+ 1053              	.LVL120:
+ 239:driverslib/nrf24l01.c ****   }
+ 1054              		.loc 1 239 5 view .LVU220
+ 1055 0062 DAE7     		b	.L63
+ 1056              	.L70:
+ 1057              		.align	2
+ 1058              	.L69:
+ 1059 0064 00000000 		.word	STATUS_VALUE
+ 1060 0068 00000000 		.word	FIFO_State
+ 1061 006c 00000000 		.word	.LANCHOR4
+ 1062              		.cfi_endproc
+ 1063              	.LFE76:
+ 1065              		.section	.text.NRF_Send_Callback,"ax",%progbits
+ 1066              		.align	1
+ 1067              		.weak	NRF_Send_Callback
+ 1068              		.syntax unified
+ 1069              		.thumb
+ 1070              		.thumb_func
+ 1071              		.fpu softvfp
+ 1073              	NRF_Send_Callback:
+ 1074              	.LFB79:
+ 253:driverslib/nrf24l01.c **** 
+ 254:driverslib/nrf24l01.c **** __weak void NRF_Send_Callback(){
+ 1075              		.loc 1 254 32 view -0
+ 1076              		.cfi_startproc
+ 1077              		@ args = 0, pretend = 0, frame = 0
+ 1078              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1079              		@ link register save eliminated.
+ 255:driverslib/nrf24l01.c ****   
+ 256:driverslib/nrf24l01.c **** }
+ 1080              		.loc 1 256 1 view .LVU222
+ 1081 0000 7047     		bx	lr
+ 1082              		.cfi_endproc
+ 1083              	.LFE79:
+ 1085              		.section	.text.NRF_Send_Message,"ax",%progbits
+ 1086              		.align	1
+ 1087              		.global	NRF_Send_Message
+ 1088              		.syntax unified
+ 1089              		.thumb
+ 1090              		.thumb_func
+ 1091              		.fpu softvfp
+ 1093              	NRF_Send_Message:
+ 1094              	.LFB75:
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 27
+
+
+ 200:driverslib/nrf24l01.c ****   
+ 1095              		.loc 1 200 24 view -0
+ 1096              		.cfi_startproc
+ 1097              		@ args = 0, pretend = 0, frame = 0
+ 1098              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1099 0000 08B5     		push	{r3, lr}
+ 1100              	.LCFI20:
+ 1101              		.cfi_def_cfa_offset 8
+ 1102              		.cfi_offset 3, -8
+ 1103              		.cfi_offset 14, -4
+ 202:driverslib/nrf24l01.c ****   NRF_Write_Bytes(W_TX_PAYLOAD,NRF_TX_Data,TX_PLOAD_WIDTH);
+ 1104              		.loc 1 202 3 view .LVU224
+ 1105 0002 0121     		movs	r1, #1
+ 1106 0004 0220     		movs	r0, #2
+ 1107 0006 FFF7FEFF 		bl	NRF_Set_Mode
+ 1108              	.LVL121:
+ 203:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CE,HIGH);
+ 1109              		.loc 1 203 3 view .LVU225
+ 1110 000a 0A22     		movs	r2, #10
+ 1111 000c 1249     		ldr	r1, .L78
+ 1112 000e A020     		movs	r0, #160
+ 1113 0010 FFF7FEFF 		bl	NRF_Write_Bytes
+ 1114              	.LVL122:
+ 204:driverslib/nrf24l01.c ****   
+ 1115              		.loc 1 204 3 view .LVU226
+ 1116 0014 0121     		movs	r1, #1
+ 1117 0016 0846     		mov	r0, r1
+ 1118 0018 FFF7FEFF 		bl	NRF_Set_GPIO
+ 1119              	.LVL123:
+ 1120 001c 08E0     		b	.L74
+ 1121              	.L77:
+ 210:driverslib/nrf24l01.c ****     }
+ 1122              		.loc 1 210 7 view .LVU227
+ 1123 001e 1021     		movs	r1, #16
+ 1124 0020 0720     		movs	r0, #7
+ 1125 0022 FFF7FEFF 		bl	NRF_Write_Reg
+ 1126              	.LVL124:
+ 1127              	.L73:
+ 212:driverslib/nrf24l01.c ****   NRF_Send_Callback();
+ 1128              		.loc 1 212 9 view .LVU228
+ 212:driverslib/nrf24l01.c ****   NRF_Send_Callback();
+ 1129              		.loc 1 212 23 is_stmt 0 view .LVU229
+ 1130 0026 0D4B     		ldr	r3, .L78+4
+ 1131 0028 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 212:driverslib/nrf24l01.c ****   NRF_Send_Callback();
+ 1132              		.loc 1 212 3 view .LVU230
+ 1133 002a 13F0200F 		tst	r3, #32
+ 1134 002e 08D1     		bne	.L76
+ 1135              	.L74:
+ 206:driverslib/nrf24l01.c ****     STATUS_VALUE=NRF_Read_Reg(STATUS);
+ 1136              		.loc 1 206 3 is_stmt 1 view .LVU231
+ 207:driverslib/nrf24l01.c ****     if((STATUS_VALUE&0x10)==0x10){
+ 1137              		.loc 1 207 5 view .LVU232
+ 207:driverslib/nrf24l01.c ****     if((STATUS_VALUE&0x10)==0x10){
+ 1138              		.loc 1 207 18 is_stmt 0 view .LVU233
+ 1139 0030 0720     		movs	r0, #7
+ 1140 0032 FFF7FEFF 		bl	NRF_Read_Reg
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 28
+
+
+ 1141              	.LVL125:
+ 207:driverslib/nrf24l01.c ****     if((STATUS_VALUE&0x10)==0x10){
+ 1142              		.loc 1 207 17 view .LVU234
+ 1143 0036 094B     		ldr	r3, .L78+4
+ 1144 0038 1870     		strb	r0, [r3]
+ 208:driverslib/nrf24l01.c ****       //NRF_Write_Reg(FLUSH_TX,0);
+ 1145              		.loc 1 208 5 is_stmt 1 view .LVU235
+ 208:driverslib/nrf24l01.c ****       //NRF_Write_Reg(FLUSH_TX,0);
+ 1146              		.loc 1 208 7 is_stmt 0 view .LVU236
+ 1147 003a 10F0100F 		tst	r0, #16
+ 1148 003e F2D0     		beq	.L73
+ 1149 0040 EDE7     		b	.L77
+ 1150              	.L76:
+ 213:driverslib/nrf24l01.c ****    
+ 1151              		.loc 1 213 3 is_stmt 1 view .LVU237
+ 1152 0042 FFF7FEFF 		bl	NRF_Send_Callback
+ 1153              	.LVL126:
+ 215:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CE,LOW);
+ 1154              		.loc 1 215 3 view .LVU238
+ 1155 0046 2021     		movs	r1, #32
+ 1156 0048 0720     		movs	r0, #7
+ 1157 004a FFF7FEFF 		bl	NRF_Write_Reg
+ 1158              	.LVL127:
+ 216:driverslib/nrf24l01.c **** 
+ 1159              		.loc 1 216 3 view .LVU239
+ 1160 004e 0021     		movs	r1, #0
+ 1161 0050 0120     		movs	r0, #1
+ 1162 0052 FFF7FEFF 		bl	NRF_Set_GPIO
+ 1163              	.LVL128:
+ 218:driverslib/nrf24l01.c **** 
+ 1164              		.loc 1 218 1 is_stmt 0 view .LVU240
+ 1165 0056 08BD     		pop	{r3, pc}
+ 1166              	.L79:
+ 1167              		.align	2
+ 1168              	.L78:
+ 1169 0058 00000000 		.word	.LANCHOR3
+ 1170 005c 00000000 		.word	STATUS_VALUE
+ 1171              		.cfi_endproc
+ 1172              	.LFE75:
+ 1174              		.section	.text.NRF_Send_Message_IT,"ax",%progbits
+ 1175              		.align	1
+ 1176              		.global	NRF_Send_Message_IT
+ 1177              		.syntax unified
+ 1178              		.thumb
+ 1179              		.thumb_func
+ 1180              		.fpu softvfp
+ 1182              	NRF_Send_Message_IT:
+ 1183              	.LFB80:
+ 257:driverslib/nrf24l01.c **** 
+ 258:driverslib/nrf24l01.c **** void NRF_Send_Message_IT(){
+ 1184              		.loc 1 258 27 is_stmt 1 view -0
+ 1185              		.cfi_startproc
+ 1186              		@ args = 0, pretend = 0, frame = 0
+ 1187              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1188 0000 08B5     		push	{r3, lr}
+ 1189              	.LCFI21:
+ 1190              		.cfi_def_cfa_offset 8
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 29
+
+
+ 1191              		.cfi_offset 3, -8
+ 1192              		.cfi_offset 14, -4
+ 259:driverslib/nrf24l01.c ****   STATUS_VALUE=NRF_Read_Reg(STATUS);
+ 1193              		.loc 1 259 3 view .LVU242
+ 1194              		.loc 1 259 16 is_stmt 0 view .LVU243
+ 1195 0002 0720     		movs	r0, #7
+ 1196 0004 FFF7FEFF 		bl	NRF_Read_Reg
+ 1197              	.LVL129:
+ 1198              		.loc 1 259 15 view .LVU244
+ 1199 0008 0B4B     		ldr	r3, .L84
+ 1200 000a 1870     		strb	r0, [r3]
+ 260:driverslib/nrf24l01.c ****   if((STATUS_VALUE&0x10)==0x10){
+ 1201              		.loc 1 260 3 is_stmt 1 view .LVU245
+ 1202              		.loc 1 260 5 is_stmt 0 view .LVU246
+ 1203 000c 10F0100F 		tst	r0, #16
+ 1204 0010 0DD1     		bne	.L83
+ 1205              	.L81:
+ 261:driverslib/nrf24l01.c ****     // 超过最大重试次数了
+ 262:driverslib/nrf24l01.c ****     NRF_Write_Reg(STATUS,0x10);  //if MAX_RT is asserted it must be cleared to enable further commu
+ 263:driverslib/nrf24l01.c ****   }
+ 264:driverslib/nrf24l01.c ****   
+ 265:driverslib/nrf24l01.c ****   NRF_Set_Mode(NRF_TX,CRC_ENABLE); 
+ 1206              		.loc 1 265 3 is_stmt 1 view .LVU247
+ 1207 0012 0121     		movs	r1, #1
+ 1208 0014 0220     		movs	r0, #2
+ 1209 0016 FFF7FEFF 		bl	NRF_Set_Mode
+ 1210              	.LVL130:
+ 266:driverslib/nrf24l01.c ****   NRF_Write_Bytes(W_TX_PAYLOAD,NRF_TX_Data,TX_PLOAD_WIDTH);
+ 1211              		.loc 1 266 3 view .LVU248
+ 1212 001a 0A22     		movs	r2, #10
+ 1213 001c 0749     		ldr	r1, .L84+4
+ 1214 001e A020     		movs	r0, #160
+ 1215 0020 FFF7FEFF 		bl	NRF_Write_Bytes
+ 1216              	.LVL131:
+ 267:driverslib/nrf24l01.c ****   NRF_Set_GPIO(CE,HIGH);  
+ 1217              		.loc 1 267 3 view .LVU249
+ 1218 0024 0121     		movs	r1, #1
+ 1219 0026 0846     		mov	r0, r1
+ 1220 0028 FFF7FEFF 		bl	NRF_Set_GPIO
+ 1221              	.LVL132:
+ 268:driverslib/nrf24l01.c **** }
+ 1222              		.loc 1 268 1 is_stmt 0 view .LVU250
+ 1223 002c 08BD     		pop	{r3, pc}
+ 1224              	.L83:
+ 262:driverslib/nrf24l01.c ****   }
+ 1225              		.loc 1 262 5 is_stmt 1 view .LVU251
+ 1226 002e 1021     		movs	r1, #16
+ 1227 0030 0720     		movs	r0, #7
+ 1228 0032 FFF7FEFF 		bl	NRF_Write_Reg
+ 1229              	.LVL133:
+ 1230 0036 ECE7     		b	.L81
+ 1231              	.L85:
+ 1232              		.align	2
+ 1233              	.L84:
+ 1234 0038 00000000 		.word	STATUS_VALUE
+ 1235 003c 00000000 		.word	.LANCHOR3
+ 1236              		.cfi_endproc
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 30
+
+
+ 1237              	.LFE80:
+ 1239              		.section	.text.NRF_Receive_IT,"ax",%progbits
+ 1240              		.align	1
+ 1241              		.global	NRF_Receive_IT
+ 1242              		.syntax unified
+ 1243              		.thumb
+ 1244              		.thumb_func
+ 1245              		.fpu softvfp
+ 1247              	NRF_Receive_IT:
+ 1248              	.LFB81:
+ 269:driverslib/nrf24l01.c **** 
+ 270:driverslib/nrf24l01.c **** void NRF_Receive_IT(){
+ 1249              		.loc 1 270 22 view -0
+ 1250              		.cfi_startproc
+ 1251              		@ args = 0, pretend = 0, frame = 0
+ 1252              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1253 0000 08B5     		push	{r3, lr}
+ 1254              	.LCFI22:
+ 1255              		.cfi_def_cfa_offset 8
+ 1256              		.cfi_offset 3, -8
+ 1257              		.cfi_offset 14, -4
+ 271:driverslib/nrf24l01.c ****  NRF_Write_Reg(STATUS,0xFF);
+ 1258              		.loc 1 271 2 view .LVU253
+ 1259 0002 FF21     		movs	r1, #255
+ 1260 0004 0720     		movs	r0, #7
+ 1261 0006 FFF7FEFF 		bl	NRF_Write_Reg
+ 1262              	.LVL134:
+ 272:driverslib/nrf24l01.c ****  STATUS_VALUE=NRF_Read_Reg(STATUS);
+ 1263              		.loc 1 272 2 view .LVU254
+ 1264              		.loc 1 272 15 is_stmt 0 view .LVU255
+ 1265 000a 0720     		movs	r0, #7
+ 1266 000c FFF7FEFF 		bl	NRF_Read_Reg
+ 1267              	.LVL135:
+ 1268              		.loc 1 272 14 view .LVU256
+ 1269 0010 074B     		ldr	r3, .L88
+ 1270 0012 1870     		strb	r0, [r3]
+ 273:driverslib/nrf24l01.c ****  NRF_Write_Reg(FLUSH_RX,0);
+ 1271              		.loc 1 273 2 is_stmt 1 view .LVU257
+ 1272 0014 0021     		movs	r1, #0
+ 1273 0016 E220     		movs	r0, #226
+ 1274 0018 FFF7FEFF 		bl	NRF_Write_Reg
+ 1275              	.LVL136:
+ 274:driverslib/nrf24l01.c ****  
+ 275:driverslib/nrf24l01.c ****  NRF_Set_Mode(NRF_RX,CRC_ENABLE); 
+ 1276              		.loc 1 275 2 view .LVU258
+ 1277 001c 0121     		movs	r1, #1
+ 1278 001e 0320     		movs	r0, #3
+ 1279 0020 FFF7FEFF 		bl	NRF_Set_Mode
+ 1280              	.LVL137:
+ 276:driverslib/nrf24l01.c ****  NRF_Set_GPIO(CE,HIGH); 
+ 1281              		.loc 1 276 2 view .LVU259
+ 1282 0024 0121     		movs	r1, #1
+ 1283 0026 0846     		mov	r0, r1
+ 1284 0028 FFF7FEFF 		bl	NRF_Set_GPIO
+ 1285              	.LVL138:
+ 277:driverslib/nrf24l01.c **** 
+ 278:driverslib/nrf24l01.c **** }
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 31
+
+
+ 1286              		.loc 1 278 1 is_stmt 0 view .LVU260
+ 1287 002c 08BD     		pop	{r3, pc}
+ 1288              	.L89:
+ 1289 002e 00BF     		.align	2
+ 1290              	.L88:
+ 1291 0030 00000000 		.word	STATUS_VALUE
+ 1292              		.cfi_endproc
+ 1293              	.LFE81:
+ 1295              		.section	.text.NRF_TX_IRQ_Handler,"ax",%progbits
+ 1296              		.align	1
+ 1297              		.global	NRF_TX_IRQ_Handler
+ 1298              		.syntax unified
+ 1299              		.thumb
+ 1300              		.thumb_func
+ 1301              		.fpu softvfp
+ 1303              	NRF_TX_IRQ_Handler:
+ 1304              	.LFB82:
+ 279:driverslib/nrf24l01.c **** void NRF_TX_IRQ_Handler(){
+ 1305              		.loc 1 279 26 is_stmt 1 view -0
+ 1306              		.cfi_startproc
+ 1307              		@ args = 0, pretend = 0, frame = 0
+ 1308              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1309 0000 08B5     		push	{r3, lr}
+ 1310              	.LCFI23:
+ 1311              		.cfi_def_cfa_offset 8
+ 1312              		.cfi_offset 3, -8
+ 1313              		.cfi_offset 14, -4
+ 280:driverslib/nrf24l01.c ****   STATUS_VALUE=NRF_Read_Reg(STATUS);
+ 1314              		.loc 1 280 3 view .LVU262
+ 1315              		.loc 1 280 16 is_stmt 0 view .LVU263
+ 1316 0002 0720     		movs	r0, #7
+ 1317 0004 FFF7FEFF 		bl	NRF_Read_Reg
+ 1318              	.LVL139:
+ 1319              		.loc 1 280 15 view .LVU264
+ 1320 0008 094B     		ldr	r3, .L94
+ 1321 000a 1870     		strb	r0, [r3]
+ 281:driverslib/nrf24l01.c ****   if(STATUS_VALUE&0x20){
+ 1322              		.loc 1 281 3 is_stmt 1 view .LVU265
+ 1323              		.loc 1 281 5 is_stmt 0 view .LVU266
+ 1324 000c 10F0200F 		tst	r0, #32
+ 1325 0010 08D1     		bne	.L93
+ 1326              	.L91:
+ 282:driverslib/nrf24l01.c ****     NRF_Set_GPIO(CE,LOW);
+ 283:driverslib/nrf24l01.c ****   }
+ 284:driverslib/nrf24l01.c ****   NRF_Write_Reg(FLUSH_TX,0);    // 这一句似乎不需要
+ 1327              		.loc 1 284 3 is_stmt 1 view .LVU267
+ 1328 0012 0021     		movs	r1, #0
+ 1329 0014 E120     		movs	r0, #225
+ 1330 0016 FFF7FEFF 		bl	NRF_Write_Reg
+ 1331              	.LVL140:
+ 285:driverslib/nrf24l01.c ****   NRF_Write_Reg(STATUS,0xFF);
+ 1332              		.loc 1 285 3 view .LVU268
+ 1333 001a FF21     		movs	r1, #255
+ 1334 001c 0720     		movs	r0, #7
+ 1335 001e FFF7FEFF 		bl	NRF_Write_Reg
+ 1336              	.LVL141:
+ 286:driverslib/nrf24l01.c **** }
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 32
+
+
+ 1337              		.loc 1 286 1 is_stmt 0 view .LVU269
+ 1338 0022 08BD     		pop	{r3, pc}
+ 1339              	.L93:
+ 282:driverslib/nrf24l01.c ****     NRF_Set_GPIO(CE,LOW);
+ 1340              		.loc 1 282 5 is_stmt 1 view .LVU270
+ 1341 0024 0021     		movs	r1, #0
+ 1342 0026 0120     		movs	r0, #1
+ 1343 0028 FFF7FEFF 		bl	NRF_Set_GPIO
+ 1344              	.LVL142:
+ 1345 002c F1E7     		b	.L91
+ 1346              	.L95:
+ 1347 002e 00BF     		.align	2
+ 1348              	.L94:
+ 1349 0030 00000000 		.word	STATUS_VALUE
+ 1350              		.cfi_endproc
+ 1351              	.LFE82:
+ 1353              		.section	.text.NRF_RX_IRQ_Handler,"ax",%progbits
+ 1354              		.align	1
+ 1355              		.global	NRF_RX_IRQ_Handler
+ 1356              		.syntax unified
+ 1357              		.thumb
+ 1358              		.thumb_func
+ 1359              		.fpu softvfp
+ 1361              	NRF_RX_IRQ_Handler:
+ 1362              	.LFB83:
+ 287:driverslib/nrf24l01.c **** 
+ 288:driverslib/nrf24l01.c **** void NRF_RX_IRQ_Handler(){
+ 1363              		.loc 1 288 26 view -0
+ 1364              		.cfi_startproc
+ 1365              		@ args = 0, pretend = 0, frame = 0
+ 1366              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1367 0000 10B5     		push	{r4, lr}
+ 1368              	.LCFI24:
+ 1369              		.cfi_def_cfa_offset 8
+ 1370              		.cfi_offset 4, -8
+ 1371              		.cfi_offset 14, -4
+ 289:driverslib/nrf24l01.c ****   NRF_Read_Bytes(R_RX_PAYLOAD,NRF_RX_Data,RX_PLOAD_WIDTH);
+ 1372              		.loc 1 289 3 view .LVU272
+ 1373 0002 094C     		ldr	r4, .L98
+ 1374 0004 0A22     		movs	r2, #10
+ 1375 0006 2146     		mov	r1, r4
+ 1376 0008 6120     		movs	r0, #97
+ 1377 000a FFF7FEFF 		bl	NRF_Read_Bytes
+ 1378              	.LVL143:
+ 290:driverslib/nrf24l01.c ****   NRF_Write_Reg(FLUSH_RX,0); 
+ 1379              		.loc 1 290 3 view .LVU273
+ 1380 000e 0021     		movs	r1, #0
+ 1381 0010 E220     		movs	r0, #226
+ 1382 0012 FFF7FEFF 		bl	NRF_Write_Reg
+ 1383              	.LVL144:
+ 291:driverslib/nrf24l01.c ****   NRF_Write_Reg(STATUS,0xFF);  //清空STATUS
+ 1384              		.loc 1 291 3 view .LVU274
+ 1385 0016 FF21     		movs	r1, #255
+ 1386 0018 0720     		movs	r0, #7
+ 1387 001a FFF7FEFF 		bl	NRF_Write_Reg
+ 1388              	.LVL145:
+ 292:driverslib/nrf24l01.c ****  
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 33
+
+
+ 293:driverslib/nrf24l01.c ****   //NRF_Set_GPIO(CE,LOW);
+ 294:driverslib/nrf24l01.c **** 
+ 295:driverslib/nrf24l01.c ****   NRF_Receive_Callback(NRF_RX_Data,RX_PLOAD_WIDTH);  
+ 1389              		.loc 1 295 3 view .LVU275
+ 1390 001e 0A21     		movs	r1, #10
+ 1391 0020 2046     		mov	r0, r4
+ 1392 0022 FFF7FEFF 		bl	NRF_Receive_Callback
+ 1393              	.LVL146:
+ 296:driverslib/nrf24l01.c **** }
+ 1394              		.loc 1 296 1 is_stmt 0 view .LVU276
+ 1395 0026 10BD     		pop	{r4, pc}
+ 1396              	.L99:
+ 1397              		.align	2
+ 1398              	.L98:
+ 1399 0028 00000000 		.word	.LANCHOR4
+ 1400              		.cfi_endproc
+ 1401              	.LFE83:
+ 1403              		.comm	FIFO_State,1,1
+ 1404              		.comm	CE_GPIO_PIN,4,4
+ 1405              		.comm	CSN_GPIO_PIN,4,4
+ 1406              		.comm	CE_GPIO_PORT,4,4
+ 1407              		.comm	CSN_GPIO_PORT,4,4
+ 1408              		.global	CONFIG_VALUE
+ 1409              		.comm	STATUS_VALUE,1,1
+ 1410              		.global	NRF_RX_Data
+ 1411              		.global	NRF_TX_Data
+ 1412              		.global	TX_ADDRESS
+ 1413              		.global	RX_ADDRESS
+ 1414              		.comm	SPI_USE,4,4
+ 1415              		.section	.bss.CONFIG_VALUE,"aw",%nobits
+ 1416              		.set	.LANCHOR0,. + 0
+ 1419              	CONFIG_VALUE:
+ 1420 0000 00       		.space	1
+ 1421              		.section	.bss.NRF_RX_Data,"aw",%nobits
+ 1422              		.align	2
+ 1423              		.set	.LANCHOR4,. + 0
+ 1426              	NRF_RX_Data:
+ 1427 0000 00000000 		.space	10
+ 1427      00000000 
+ 1427      0000
+ 1428              		.section	.data.NRF_TX_Data,"aw"
+ 1429              		.align	2
+ 1430              		.set	.LANCHOR3,. + 0
+ 1433              	NRF_TX_Data:
+ 1434 0000 01020304 		.ascii	"\001\002\003\004\005\006\007\010\011\012"
+ 1434      05060708 
+ 1434      090A
+ 1435              		.section	.data.RX_ADDRESS,"aw"
+ 1436              		.align	2
+ 1437              		.set	.LANCHOR2,. + 0
+ 1440              	RX_ADDRESS:
+ 1441 0000 20304040 		.ascii	" 0@@B"
+ 1441      42
+ 1442 0005 01020304 		.ascii	"\001\002\003\004\005"
+ 1442      05
+ 1443 000a 00000000 		.space	5
+ 1443      00
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 34
+
+
+ 1444              		.section	.data.TX_ADDRESS,"aw"
+ 1445              		.align	2
+ 1446              		.set	.LANCHOR1,. + 0
+ 1449              	TX_ADDRESS:
+ 1450 0000 20304040 		.ascii	" 0@@B"
+ 1450      42
+ 1451              		.text
+ 1452              	.Letext0:
+ 1453              		.file 2 "c:\\arm_gcc\\arm-none-eabi\\include\\machine\\_default_types.h"
+ 1454              		.file 3 "c:\\arm_gcc\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 1455              		.file 4 "c:\\arm_gcc\\lib\\gcc\\arm-none-eabi\\9.2.1\\include\\stddef.h"
+ 1456              		.file 5 "Drivers/CMSIS/Include/core_cm3.h"
+ 1457              		.file 6 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h"
+ 1458              		.file 7 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xe.h"
+ 1459              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 1460              		.file 9 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
+ 1461              		.file 10 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h"
+ 1462              		.file 11 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+ 1463              		.file 12 "Core/Inc/spi.h"
+ 1464              		.file 13 "driverslib/nrf24l01.h"
+ 1465              		.file 14 "c:\\arm_gcc\\arm-none-eabi\\include\\sys\\lock.h"
+ 1466              		.file 15 "c:\\arm_gcc\\arm-none-eabi\\include\\sys\\_types.h"
+ 1467              		.file 16 "c:\\arm_gcc\\arm-none-eabi\\include\\sys\\reent.h"
+ 1468              		.file 17 "c:\\arm_gcc\\arm-none-eabi\\include\\stdlib.h"
+ 1469              		.file 18 "c:\\arm_gcc\\arm-none-eabi\\include\\string.h"
+ 1470              		.file 19 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h"
+ 1471              		.file 20 "<built-in>"
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 35
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 nrf24l01.c
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:16     .text.NRF_Set_GPIO:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:23     .text.NRF_Set_GPIO:00000000 NRF_Set_GPIO
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:82     .text.NRF_Set_GPIO:0000002c $d
+                            *COM*:00000004 CSN_GPIO_PIN
+                            *COM*:00000004 CSN_GPIO_PORT
+                            *COM*:00000004 CE_GPIO_PIN
+                            *COM*:00000004 CE_GPIO_PORT
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:90     .text.NRF_Read_Reg:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:97     .text.NRF_Read_Reg:00000000 NRF_Read_Reg
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:165    .text.NRF_Read_Reg:00000054 $d
+                            *COM*:00000004 SPI_USE
+                            *COM*:00000001 STATUS_VALUE
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:171    .text.NRF_Write_Reg:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:178    .text.NRF_Write_Reg:00000000 NRF_Write_Reg
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:242    .text.NRF_Write_Reg:00000048 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:248    .text.NRF_Set_Mode:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:254    .text.NRF_Set_Mode:00000000 NRF_Set_Mode
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:294    .text.NRF_Set_Mode:00000018 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:299    .text.NRF_Read_Bytes:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:306    .text.NRF_Read_Bytes:00000000 NRF_Read_Bytes
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:387    .text.NRF_Read_Bytes:00000064 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:393    .text.NRF_Write_Bytes:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:400    .text.NRF_Write_Bytes:00000000 NRF_Write_Bytes
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:491    .text.NRF_Write_Bytes:00000074 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:497    .text.NRF_Set_Tx_Addr:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:504    .text.NRF_Set_Tx_Addr:00000000 NRF_Set_Tx_Addr
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:547    .text.NRF_Set_Rx_Addr:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:554    .text.NRF_Set_Rx_Addr:00000000 NRF_Set_Rx_Addr
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:651    .text.NRF_Init:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:658    .text.NRF_Init:00000000 NRF_Init
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:854    .text.NRF_Init:000000b8 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:866    .text.NRF_Enable_Interrupt:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:873    .text.NRF_Enable_Interrupt:00000000 NRF_Enable_Interrupt
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:903    .text.NRF_Enable_Interrupt:00000014 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:908    .text.NRF_Install_TX_Data:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:915    .text.NRF_Install_TX_Data:00000000 NRF_Install_TX_Data
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:943    .text.NRF_Install_TX_Data:00000010 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:948    .text.NRF_Receive_Callback:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:955    .text.NRF_Receive_Callback:00000000 NRF_Receive_Callback
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:969    .text.NRF_Receive:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:976    .text.NRF_Receive:00000000 NRF_Receive
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1059   .text.NRF_Receive:00000064 $d
+                            *COM*:00000001 FIFO_State
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1066   .text.NRF_Send_Callback:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1073   .text.NRF_Send_Callback:00000000 NRF_Send_Callback
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1086   .text.NRF_Send_Message:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1093   .text.NRF_Send_Message:00000000 NRF_Send_Message
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1169   .text.NRF_Send_Message:00000058 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1175   .text.NRF_Send_Message_IT:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1182   .text.NRF_Send_Message_IT:00000000 NRF_Send_Message_IT
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1234   .text.NRF_Send_Message_IT:00000038 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1240   .text.NRF_Receive_IT:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1247   .text.NRF_Receive_IT:00000000 NRF_Receive_IT
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1291   .text.NRF_Receive_IT:00000030 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1296   .text.NRF_TX_IRQ_Handler:00000000 $t
+ARM GAS  C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s 			page 36
+
+
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1303   .text.NRF_TX_IRQ_Handler:00000000 NRF_TX_IRQ_Handler
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1349   .text.NRF_TX_IRQ_Handler:00000030 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1354   .text.NRF_RX_IRQ_Handler:00000000 $t
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1361   .text.NRF_RX_IRQ_Handler:00000000 NRF_RX_IRQ_Handler
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1399   .text.NRF_RX_IRQ_Handler:00000028 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1419   .bss.CONFIG_VALUE:00000000 CONFIG_VALUE
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1426   .bss.NRF_RX_Data:00000000 NRF_RX_Data
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1433   .data.NRF_TX_Data:00000000 NRF_TX_Data
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1449   .data.TX_ADDRESS:00000000 TX_ADDRESS
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1440   .data.RX_ADDRESS:00000000 RX_ADDRESS
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1420   .bss.CONFIG_VALUE:00000000 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1422   .bss.NRF_RX_Data:00000000 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1429   .data.NRF_TX_Data:00000000 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1436   .data.RX_ADDRESS:00000000 $d
+C:\Users\ncer\AppData\Local\Temp\cclcz4oa.s:1445   .data.TX_ADDRESS:00000000 $d
+
+UNDEFINED SYMBOLS
+HAL_GPIO_WritePin
+HAL_SPI_TransmitReceive
+HAL_SPI_Transmit
+malloc
+memset
+free
+HAL_Delay
+memcpy
